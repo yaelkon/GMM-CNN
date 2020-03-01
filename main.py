@@ -11,8 +11,10 @@ An experiment pip for modeling CNN layers with GMM.
 Define your experiment parameters below
 """
 
-SAVING_DIR = '/tmp/'
-WEIGHTS_DIR = None
+SAVING_DIR = 'C:/Users/aharon.AHARON2/Desktop/tmp'
+
+# A pre-trained network's weights - optional
+WEIGHTS_DIR = 'D:/GitHub/GMM-CNN/utils/cifar10_resnet20_weights.97.hdf5'
 
 # --------- GMM parameters
 # Choose between 'generative' or 'discriminative' training loss
@@ -22,12 +24,15 @@ GMM_training_method = 'discriminative'
 input_shape = (32, 32, 3)
 
 # --------- Model parameters
-network_name = 'vgg16'
-layer_to_model = 'block1_conv1'
-n_gaussians = [500]
+network_name = 'resnet20'
+# Specify the layer name as str to model or a list contains str layer names for multiple modeled layers
+layer_to_model = 'classification'
+# Specify the number of clusters each GMM will contain.
+# The clusters order has to be matched to the order specified in 'layer_to_model' arg.
+n_gaussians = [10]
 
 # --------- Training parameters
-batch_size = 5
+batch_size = 15
 num_epochs = 1
 
 
@@ -59,7 +64,7 @@ model = GMM_CNN(n_gaussians=n_gaussians,
                 saving_dir=SAVING_DIR,
                 GMM_layers=layer_to_model,
                 network_name=network_name,
-                set_classification_layer_as_output=False,
+                set_classification_layer_as_output=True,
                 weights_dir=WEIGHTS_DIR)
 
 model.build_model()
@@ -68,7 +73,7 @@ model.compile_model()
 print('Initialising GMM parameters')
 
 layers_gmm_params = model.calc_modeled_layers_mean_and_std(x_train[:1000])
-model.keras_model = model.set_weights(layers_gmm_params)
+model.set_weights(layers_gmm_params)
 
 # Fit the labels size according to the number of outputs layers
 n_outputs = len(model.output_layers)

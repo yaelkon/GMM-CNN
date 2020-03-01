@@ -10,7 +10,6 @@ from keras.callbacks import ModelCheckpoint, CSVLogger, TensorBoard, TerminateOn
 from keras.regularizers import l2
 from keras.applications.resnet50 import ResNet50
 from keras.applications.vgg16 import VGG16
-from keras_applications.xception import Xception
 from keras.losses import categorical_crossentropy
 from keras.utils import plot_model
 from keras.utils.generic_utils import get_custom_objects
@@ -18,6 +17,8 @@ from keras import backend as K
 from losses import build_gmm_loss
 from layers import GMM, gmm_bayes_activation, get_layer_output
 from utils.file import makedir
+from utils.resnet import build_resnet
+
 
 os.environ['PYTHONHASHSEED'] = '0'
 # The below is necessary for starting Numpy generated random numbers
@@ -66,15 +67,16 @@ class Encoder(object):
     def _build_encoder_layers(self, input_layer, name, gmm_layers=None):
         """Stacks sequence of conv/pool layers to make the encoder half.
         """
-        global base_model
         encoded = []
 
         if name == 'resnet50':
             base_model = ResNet50(weights='imagenet', include_top=(not self.add_top), input_tensor=input_layer)
+        elif name == 'resnet20':
+            base_model = build_resnet(depth=20, input_layer=input_layer, n_classes=self.num_classes)
         elif name == 'vgg16':
             base_model = VGG16(weights='imagenet', include_top=(not self.add_top), input_tensor=input_layer)
-        elif name == 'xception':
-            base_model = Xception(weights='imagenet', include_top=(not self.add_top), input_tensor=input_layer)
+        else:
+            raise TypeError('The model type cane be either resnet20, resnet50 or vgg16')
 
         if self.weights_dir is not None and len(self.weights_dir) > 0:
             base_model.load_weights(self.weights_dir)
@@ -137,12 +139,11 @@ class GMM_CNN(Encoder):
                  weights_name_format='weights.{epoch:02d}.hdf5',
                  training_method='generative',
                  network_name='vgg16',
-                 optimize_with_classifier=False,
                  set_gmm_activation_layer_as_output=False,
                  set_gmm_layer_as_output=False,
-                 set_classification_layer_as_output=False,
+                 set_classification_layer_as_output=True,
                  freeze=True,
-                 add_top=True,
+                 add_top=False,
                  GMM_layers=None,
                  weights_dir=None):
 
@@ -171,7 +172,6 @@ class GMM_CNN(Encoder):
         self.input_shape = input_shape
         self.n_classes = n_classes
         self.modeled_layers = GMM_layers
-        self.optimize_gmm_with_classifier = optimize_with_classifier
         self.training_method = training_method
         self.set_gmm_layer_as_output = set_gmm_layer_as_output
         self.set_gmm_activation_layer_as_output = set_gmm_activation_layer_as_output
@@ -223,7 +223,7 @@ class GMM_CNN(Encoder):
         """Builds layers for classification on top of encoder layers.
         """
         h = Flatten()(encoded)
-        # A softmax layer
+        # Add classifier on top
         y = Dense(self.n_classes, activation='softmax', name='classification')(h)
 
         return y
@@ -285,7 +285,7 @@ class GMM_CNN(Encoder):
 
             if self.set_gmm_activation_layer_as_output or self.training_method == 'discriminative':
                 get_custom_objects().update({'gmm_bayes_activation': Activation(gmm_bayes_activation)})
-                x = Activation(gmm_bayes_activation, name='activation_' + layer_name)(layer)
+                x = Activation(gmm_bayes_activation, name='activation_' + gmm_name)(layer)
                 self.gmm_activations_dict.update({layer_name: 'activation_' + gmm_name})
                 layers_array.append(x)
 
@@ -417,13 +417,11 @@ class GMM_CNN(Encoder):
                 preds_dict['GMM'][field_name] = gmm_pred
 
             elif layer_type == 'Activation':
-                gmm_layer_name = output_layer.name.split('_')
-                if len(gmm_layer_name) == 3:
-                    gmm_layer_name = gmm_layer_name[1] + '_' + gmm_layer_name[2]
-                elif len(gmm_layer_name) == 4:
-                    gmm_layer_name = gmm_layer_name[1] + '_' + gmm_layer_name[2] + '_' + gmm_layer_name[3]
-                else:
-                    ValueError(f'{output_layer.name} len has to be size 3 or 4')
+                layer_name = output_layer.name.split('_')
+                gmm_layer_name = ''
+                for s in layer_name[1:]:
+                    gmm_layer_name = gmm_layer_name + '_' + s
+                gmm_layer_name = gmm_layer_name[1:]
 
                 preds_dict['GMM'][gmm_layer_name] = preds[i]
 
@@ -523,10 +521,9 @@ class GMM_CNN(Encoder):
         Returns:
             keras_model - the same model after the weights has been initiated.
             """
-        keras_model = self.keras_model
 
         for gmm_layer_name in gmms_params_dict:
-            layer = keras_model.get_layer(gmm_layer_name)
+            layer = self.keras_model.get_layer(gmm_layer_name)
             weights = layer.get_weights()
             layer_type = type(layer).__name__
 
@@ -539,8 +536,8 @@ class GMM_CNN(Encoder):
                     weights[2] = np.ones_like(weights[2]) * gmms_params_dict[layer.name]['prior']
 
                 if self.network_output_layer_name in layer.name and self.training_method == 'discriminative':
-                    classifier_layer_name = 'classifier_' + layer.name
-                    classifier_layer = keras_model.get_layer(classifier_layer_name)
+                    classifier_layer_name = self.classifiers_dict[layer.name]
+                    classifier_layer = self.keras_model.get_layer(classifier_layer_name)
                     classifier_weights = classifier_layer.get_weights()
                     classifier_weights[0] = np.ones_like(classifier_weights[0]) * \
                                             gmms_params_dict[layer.name]['mu'][0]
@@ -553,7 +550,6 @@ class GMM_CNN(Encoder):
                     weights[1] = np.ones_like(weights[1]) * gmms_params_dict[layer.name]['b']
 
             layer.set_weights(weights)
-        return keras_model
 
     def calc_modeled_layers_mean_and_std(self, data):
         """For each conv layer calc the mean and std of the output data
