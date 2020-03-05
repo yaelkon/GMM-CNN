@@ -11,7 +11,7 @@ An experiment pip for modeling CNN layers with GMM.
 Define your experiment parameters below
 """
 
-SAVING_DIR = 'C:/Users/aharon.AHARON2/Desktop/tmp'
+SAVING_DIR = '/tmp/'
 
 # A pre-trained network's weights - optional
 WEIGHTS_DIR = 'D:/GitHub/GMM-CNN/utils/cifar10_resnet20_weights.97.hdf5'
