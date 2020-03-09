@@ -30,8 +30,8 @@ def merge_dicts(*dicts, option=1):
 
     return d
 
-SAVING_DIR = 'C:/Users/aharon.AHARON2/Desktop/tmp'
-WEIGHTS_DIR = 'C:/Users/aharon.AHARON2/Desktop/tmp/add_1_weights.09.hdf5'
+SAVING_DIR = '/tmp'
+WEIGHTS_DIR = '/tmp/add_1_weights.09.hdf5'
 
 # --------- GMM parameters
 # Choose between 'generative' or 'discriminative' training loss
