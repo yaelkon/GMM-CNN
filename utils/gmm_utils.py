@@ -1,5 +1,4 @@
 import numpy as np
-from layers import get_layer_output
 from tensorflow import set_random_seed
 
 np.random.seed(101)
@@ -87,6 +86,9 @@ def find_max(outputs_gmm_tens, outputs_llr_tens=None, n_max=10):
 
                 elif len(tens_shape) == 2:
                     image_inds = k_indices
+                else:
+                    raise ValueError( 'the output shape must be either 4 for convolutional layer or'
+                                      ' 2 for dense layer, but got: {len(shape)}' )
 
                 clusters_dict[k + 1] = {}
                 clusters_dict[k + 1] = image_inds

@@ -1,5 +1,6 @@
 import numpy as np
-
+import os
+from os.path import join as pjoin
 from gmm_cnn import GMM_CNN
 from keras.datasets import cifar10
 from keras.utils import to_categorical
@@ -30,8 +31,8 @@ def merge_dicts(*dicts, option=1):
 
     return d
 
-SAVING_DIR = '/tmp'
-WEIGHTS_DIR = '/tmp/add_1_weights.09.hdf5'
+SAVING_DIR = pjoin(os.path.abspath(os.getcwd()), 'savings')
+WEIGHTS_DIR = pjoin(os.path.abspath(os.getcwd()), 'add_1_weights.09.hdf5')
 
 # --------- GMM parameters
 # Choose between 'generative' or 'discriminative' training loss
@@ -50,6 +51,9 @@ n_gaussians = [500]
 n_cluster_reps_to_save = 100
 # Equals for number of batches (not batch size!)
 num_of_iterations = 20
+
+if not os.path.exists( SAVING_DIR ):
+    os.makedirs( SAVING_DIR )
 
 # -----------------------   Prepare cifar 10 dataset    --------------------------
 (_, _), (x_val, y_val) = cifar10.load_data()
@@ -128,7 +132,8 @@ for gmm_output_layer in model.gmm_dict.values():
         W_dim = shape[2]
         n_samples = B_dim * H_dim * W_dim
     else:
-        raise ValueError('The output shape must be 4 for convolutional layer and 2 for dense layer')
+        raise ValueError('the output shape must be either 4 for convolutional layer or'
+                         ' 2 for dense layer, but got: {len(shape)}')
 
     clusters_rep_to_save = get_cluster_reps(tot_clusters_rep_to_save, H_dim, W_dim, n_cluster_reps_to_save)
     clusters_stats = create_cluster_stats(y_one_hot, tot_cluster_rep, n_samples)

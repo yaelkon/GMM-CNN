@@ -2,7 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="da6326a0-b1b9-4fed-aae4-fd53df6fd234" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/draw_cluster.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/receptivefield.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Desktop/tmp/model.png" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gmm_cnn.py" afterPath="$PROJECT_DIR$/gmm_cnn.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/utils/file.py" afterPath="$PROJECT_DIR$/utils/file.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/utils/gather_clusters_stats.py" afterPath="$PROJECT_DIR$/utils/gather_clusters_stats.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/utils/gmm_utils.py" afterPath="$PROJECT_DIR$/utils/gmm_utils.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -16,8 +23,8 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1869">
-              <caret line="89" column="0" lean-forward="false" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
+            <state relative-caret-position="420">
+              <caret line="20" column="0" lean-forward="false" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -25,31 +32,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="pydevd.py" pinned="false" current-in-tab="false">
-        <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="32718">
-              <caret line="1595" column="0" lean-forward="false" selection-start-line="1595" selection-start-column="0" selection-end-line="1595" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="resnet.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utils/resnet.py">
+      <file leaf-file-name="draw_cluster.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/draw_cluster.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="42">
-              <caret line="2" column="27" lean-forward="false" selection-start-line="2" selection-start-column="27" selection-end-line="2" selection-end-column="27" />
-              <folding />
+              <caret line="14" column="0" lean-forward="true" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="gmm_utils.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utils/gmm_utils.py">
+      <file leaf-file-name="receptivefield.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/receptivefield.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1743">
-              <caret line="85" column="43" lean-forward="false" selection-start-line="85" selection-start-column="43" selection-end-line="85" selection-end-column="43" />
+            <state relative-caret-position="9366">
+              <caret line="447" column="29" lean-forward="false" selection-start-line="447" selection-start-column="29" selection-end-line="447" selection-end-column="29" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -57,24 +56,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="gmm_cnn.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="gmm_cnn.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gmm_cnn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="218">
-              <caret line="148" column="0" lean-forward="false" selection-start-line="148" selection-start-column="0" selection-end-line="148" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#9#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="0">
+              <caret line="0" column="9" lean-forward="false" selection-start-line="0" selection-start-column="9" selection-end-line="0" selection-end-column="9" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="base_layer.py" pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/keras/engine/base_layer.py">
+      <file leaf-file-name="file.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utils/file.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="10185">
-              <caret line="500" column="0" lean-forward="false" selection-start-line="500" selection-start-column="0" selection-end-line="500" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="162">
+              <caret line="24" column="0" lean-forward="true" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -82,33 +81,11 @@
       <file leaf-file-name="gather_clusters_stats.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/utils/gather_clusters_stats.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1512">
-              <caret line="93" column="0" lean-forward="false" selection-start-line="93" selection-start-column="0" selection-end-line="93" selection-end-column="0" />
+            <state relative-caret-position="252">
+              <caret line="33" column="20" lean-forward="false" selection-start-line="33" selection-start-column="20" selection-end-line="33" selection-end-column="20" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
-                <element signature="e#276#946#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="codecs.py" pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/codecs.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6468">
-              <caret line="308" column="0" lean-forward="false" selection-start-line="308" selection-start-column="0" selection-end-line="308" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="draw_clusters.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/visualization/draw_clusters.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3360">
-              <caret line="168" column="51" lean-forward="false" selection-start-line="168" selection-start-column="51" selection-end-line="168" selection-end-column="51" />
-              <folding>
-                <element signature="e#0#31#0" expanded="true" />
+                <element signature="e#319#989#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -137,16 +114,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>optimizer</find>
-      <find>calc_layer_mean_and_std</find>
-      <find>init_params_mode</find>
-      <find>data_augmentation</find>
-      <find>subtract_pixel_mean</find>
-      <find>data_name</find>
-      <find>num_epochs</find>
-      <find>Params</find>
-      <find>with_llr_gradient</find>
-      <find>with_</find>
       <find>with_cl</find>
       <find>gmm_training_method</find>
       <find>_output_layers</find>
@@ -160,13 +127,23 @@
       <find>optimize_with_classifier</find>
       <find>optimize_gmm_with_classifier</find>
       <find>batch_size</find>
-      <find>smooth</find>
-      <find>add_image_prob_inf</find>
-      <find>title</find>
       <find>set_classification_layer_as_output</find>
       <find>compil</find>
       <find>compi</find>
       <find>sgd</find>
+      <find>np</find>
+      <find>np.</find>
+      <find>forward_testing_function</find>
+      <find>_find_rectangle</find>
+      <find>_calc_influence_input_neuron</find>
+      <find>rf</find>
+      <find>add_centered_dot</find>
+      <find>smooth</find>
+      <find>title</find>
+      <find>add_image_prob_inf</find>
+      <find>dot_radius</find>
+      <find>n_empty_clusters</find>
+      <find>makedir</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -177,7 +154,6 @@
       <list>
         <option value="$PROJECT_DIR$/losses.py" />
         <option value="$PROJECT_DIR$/callbacks.py" />
-        <option value="$PROJECT_DIR$/utils/file.py" />
         <option value="$PROJECT_DIR$/utils/imagenet_utils.py" />
         <option value="$PROJECT_DIR$/layers.py" />
         <option value="$PROJECT_DIR$/utils/gatherClusterStats.py" />
@@ -185,14 +161,18 @@
         <option value="$PROJECT_DIR$/visualization/draw_clusters.py" />
         <option value="$PROJECT_DIR$/resnet.py" />
         <option value="$PROJECT_DIR$/utils/resnet.py" />
-        <option value="$PROJECT_DIR$/utils/gather_clusters_stats.py" />
-        <option value="$PROJECT_DIR$/gmm_cnn.py" />
-        <option value="$PROJECT_DIR$/utils/gmm_utils.py" />
         <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/utils/gather_clusters_stats.py" />
+        <option value="$PROJECT_DIR$/receptivefield.py" />
+        <option value="$PROJECT_DIR$/utils/file.py" />
+        <option value="$PROJECT_DIR$/utils/gmm_utils.py" />
+        <option value="$PROJECT_DIR$/visualization/draw_cluster.py" />
+        <option value="$PROJECT_DIR$/gmm_cnn.py" />
+        <option value="$PROJECT_DIR$/draw_cluster.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="261" />
     <option name="width" value="1666" />
     <option name="height" value="1047" />
@@ -228,8 +208,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -237,28 +215,21 @@
               <item name="GMM-CNN" type="b2602c69:ProjectViewProjectNode" />
               <item name="GMM-CNN" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="GMM-CNN" type="b2602c69:ProjectViewProjectNode" />
-              <item name="GMM-CNN" type="462c0819:PsiDirectoryNode" />
-              <item name="utils" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="GMM-CNN" type="b2602c69:ProjectViewProjectNode" />
-              <item name="GMM-CNN" type="462c0819:PsiDirectoryNode" />
-              <item name="visualization" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="D:/ANV" />
-    <property name="settings.editor.selected.configurable" value="configurable.group.appearance" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\GitHub\GMM-CNN" />
       <recent name="D:\GitHub\GMM-CNN\utils" />
     </key>
   </component>
@@ -274,7 +245,24 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.main">
+  <component name="RunManager" selected="Python.draw_cluster">
+    <configuration name="draw_cluster" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/visualization" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="GMM-CNN" />
+      <option name="SCRIPT_NAME" value="D:\GitHub\GMM-CNN\draw_cluster.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+    </configuration>
     <configuration name="gather_clusters_stats" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -309,14 +297,16 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
-    <list size="2">
+    <list size="3">
       <item index="0" class="java.lang.String" itemvalue="Python.main" />
       <item index="1" class="java.lang.String" itemvalue="Python.gather_clusters_stats" />
+      <item index="2" class="java.lang.String" itemvalue="Python.draw_cluster" />
     </list>
     <recent_temporary>
-      <list size="2">
-        <item index="0" class="java.lang.String" itemvalue="Python.main" />
-        <item index="1" class="java.lang.String" itemvalue="Python.gather_clusters_stats" />
+      <list size="3">
+        <item index="0" class="java.lang.String" itemvalue="Python.draw_cluster" />
+        <item index="1" class="java.lang.String" itemvalue="Python.main" />
+        <item index="2" class="java.lang.String" itemvalue="Python.gather_clusters_stats" />
       </list>
     </recent_temporary>
   </component>
@@ -337,20 +327,20 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15565032" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15884861" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32934782" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32934782" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36413044" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2923913" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24946696" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.119936034" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -368,22 +358,22 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gmm_cnn.py</url>
-          <line>253</line>
+          <line>254</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gmm_cnn.py</url>
-          <line>201</line>
+          <line>202</line>
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gmm_cnn.py</url>
-          <line>282</line>
+          <line>283</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gmm_cnn.py</url>
-          <line>529</line>
+          <line>534</line>
           <option name="timeStamp" value="17" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -393,12 +383,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gmm_cnn.py</url>
-          <line>372</line>
+          <line>374</line>
           <option name="timeStamp" value="20" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gmm_cnn.py</url>
-          <line>537</line>
+          <line>542</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -413,45 +403,35 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/gather_clusters_stats.py</url>
-          <line>90</line>
+          <line>93</line>
           <option name="timeStamp" value="32" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/gather_clusters_stats.py</url>
-          <line>132</line>
+          <line>136</line>
           <option name="timeStamp" value="35" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/draw_cluster.py</url>
+          <line>16</line>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>20</line>
+          <option name="timeStamp" value="37" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="36" />
+      <option name="time" value="43" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="693">
-          <caret line="33" column="31" lean-forward="false" selection-start-line="33" selection-start-column="31" selection-end-line="33" selection-end-column="31" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/resnet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1659">
-          <caret line="82" column="0" lean-forward="false" selection-start-line="82" selection-start-column="0" selection-end-line="82" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/utils/gmm_utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1743">
           <caret line="85" column="43" lean-forward="false" selection-start-line="85" selection-start-column="43" selection-end-line="85" selection-end-column="43" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -459,7 +439,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="10185">
           <caret line="500" column="0" lean-forward="false" selection-start-line="500" selection-start-column="0" selection-end-line="500" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -469,7 +448,7 @@
           <caret line="93" column="0" lean-forward="false" selection-start-line="93" selection-start-column="0" selection-end-line="93" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#276#946#0" expanded="false" />
+            <element signature="e#319#989#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -478,20 +457,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="6468">
           <caret line="308" column="0" lean-forward="false" selection-start-line="308" selection-start-column="0" selection-end-line="308" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visualization/draw_clusters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3360">
-          <caret line="168" column="51" lean-forward="false" selection-start-line="168" selection-start-column="51" selection-end-line="168" selection-end-column="51" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/visualization/draw_clusters.py" />
     <entry file="file://$PROJECT_DIR$/visualization/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="84">
@@ -513,9 +482,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7770">
           <caret line="370" column="39" lean-forward="false" selection-start-line="370" selection-start-column="39" selection-end-line="370" selection-end-column="39" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -533,7 +500,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1659">
           <caret line="82" column="0" lean-forward="false" selection-start-line="82" selection-start-column="0" selection-end-line="82" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -541,9 +507,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1743">
           <caret line="85" column="43" lean-forward="false" selection-start-line="85" selection-start-column="43" selection-end-line="85" selection-end-column="43" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -551,7 +515,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="10185">
           <caret line="500" column="0" lean-forward="false" selection-start-line="500" selection-start-column="0" selection-end-line="500" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -561,7 +524,7 @@
           <caret line="93" column="0" lean-forward="false" selection-start-line="93" selection-start-column="0" selection-end-line="93" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#276#946#0" expanded="false" />
+            <element signature="e#319#989#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -570,20 +533,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="6468">
           <caret line="308" column="0" lean-forward="false" selection-start-line="308" selection-start-column="0" selection-end-line="308" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visualization/draw_clusters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3360">
-          <caret line="168" column="51" lean-forward="false" selection-start-line="168" selection-start-column="51" selection-end-line="168" selection-end-column="51" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/visualization/draw_clusters.py" />
     <entry file="file://$PROJECT_DIR$/visualization/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="84">
@@ -605,9 +558,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7770">
           <caret line="370" column="39" lean-forward="false" selection-start-line="370" selection-start-column="39" selection-end-line="370" selection-end-column="39" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -625,7 +576,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1806">
           <caret line="89" column="0" lean-forward="false" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -633,9 +583,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3612">
           <caret line="174" column="44" lean-forward="false" selection-start-line="174" selection-start-column="44" selection-end-line="174" selection-end-column="44" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -643,9 +591,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1596">
           <caret line="76" column="99" lean-forward="false" selection-start-line="76" selection-start-column="99" selection-end-line="76" selection-end-column="99" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -655,21 +601,12 @@
           <caret line="35" column="26" lean-forward="false" selection-start-line="35" selection-start-column="26" selection-end-line="35" selection-end-column="26" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#276#946#0" expanded="false" />
+            <element signature="e#319#989#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visualization/draw_clusters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3360">
-          <caret line="168" column="51" lean-forward="false" selection-start-line="168" selection-start-column="51" selection-end-line="168" selection-end-column="51" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/visualization/draw_clusters.py" />
     <entry file="file://$PROJECT_DIR$/visualization/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="84">
@@ -701,9 +638,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="21">
           <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -732,9 +667,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7833">
           <caret line="373" column="0" lean-forward="false" selection-start-line="373" selection-start-column="0" selection-end-line="373" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -746,13 +679,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/callbacks.py" />
-    <entry file="file://$PROJECT_DIR$/utils/file.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="798">
-          <caret line="40" column="15" lean-forward="false" selection-start-line="40" selection-start-column="15" selection-end-line="40" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/utils/imagenet_utils.py" />
     <entry file="file://$PROJECT_DIR$/layers.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -768,16 +694,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/visualization/draw_clusters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3360">
-          <caret line="168" column="51" lean-forward="false" selection-start-line="168" selection-start-column="51" selection-end-line="168" selection-end-column="51" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/visualization/draw_clusters.py" />
     <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/keras/engine/saving.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
@@ -789,7 +706,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="10185">
           <caret line="500" column="0" lean-forward="false" selection-start-line="500" selection-start-column="0" selection-end-line="500" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -797,28 +713,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="6468">
           <caret line="308" column="0" lean-forward="false" selection-start-line="308" selection-start-column="0" selection-end-line="308" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/gmm_utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1743">
-          <caret line="85" column="43" lean-forward="false" selection-start-line="85" selection-start-column="43" selection-end-line="85" selection-end-column="43" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/gather_clusters_stats.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1512">
-          <caret line="93" column="0" lean-forward="false" selection-start-line="93" selection-start-column="0" selection-end-line="93" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#276#946#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -826,6 +720,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="42">
           <caret line="2" column="27" lean-forward="false" selection-start-line="2" selection-start-column="27" selection-end-line="2" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="32718">
+          <caret line="1595" column="0" lean-forward="false" selection-start-line="1595" selection-start-column="0" selection-end-line="1595" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -840,18 +741,49 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
+    <entry file="file://$PROJECT_DIR$/receptivefield.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="32718">
-          <caret line="1595" column="0" lean-forward="false" selection-start-line="1595" selection-start-column="0" selection-end-line="1595" selection-end-column="0" />
+        <state relative-caret-position="9366">
+          <caret line="447" column="29" lean-forward="false" selection-start-line="447" selection-start-column="29" selection-end-line="447" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/gather_clusters_stats.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="33" column="20" lean-forward="false" selection-start-line="33" selection-start-column="20" selection-end-line="33" selection-end-column="20" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#319#989#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/file.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="162">
+          <caret line="24" column="0" lean-forward="true" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/gmm_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="18" lean-forward="false" selection-start-line="0" selection-start-column="18" selection-end-line="0" selection-end-column="18" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1869">
-          <caret line="89" column="0" lean-forward="false" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
+        <state relative-caret-position="420">
+          <caret line="20" column="0" lean-forward="false" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
@@ -860,8 +792,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gmm_cnn.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="218">
-          <caret line="148" column="0" lean-forward="false" selection-start-line="148" selection-start-column="0" selection-end-line="148" selection-end-column="0" />
+        <state relative-caret-position="0">
+          <caret line="0" column="9" lean-forward="false" selection-start-line="0" selection-start-column="9" selection-end-line="0" selection-end-column="9" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/draw_cluster.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="42">
+          <caret line="14" column="0" lean-forward="true" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
