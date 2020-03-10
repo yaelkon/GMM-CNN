@@ -26,7 +26,7 @@ class MinValue(Constraint):
 
 class GMM(Layer):
     def __init__(self, n_clusters=2, epsilon=0.1, seed=101, modeled_layer_type='Conv2d', **kwargs):
-        self.K = n_clusters
+        self.n_clusters = n_clusters
         self.epsilon = epsilon
         self.seed = seed
         self.mu = None
@@ -44,21 +44,21 @@ class GMM(Layer):
 
             Note that the sigma values are saves as std, not as variance"""
 
-        self.mu = self.add_weight(name='mu',
-                                  shape=(self.K, input_shape[-1]),
-                                  initializer=random_normal(mean=0, stddev=0.4, seed=self.seed),
-                                  trainable=True)
+        self.mu = self.add_weight( name='mu',
+                                   shape=(self.n_clusters, input_shape[-1]),
+                                   initializer=random_normal(mean=0, stddev=0.4, seed=self.seed),
+                                   trainable=True )
 
-        self.std = self.add_weight(name='std',
-                                   shape=(self.K, input_shape[-1]),
-                                   initializer=random_normal(mean=0.3, stddev=0.05, seed=self.seed),
-                                   trainable=True,
-                                   constraint=MinValue(min_value=self.epsilon))
+        self.std = self.add_weight( name='std',
+                                    shape=(self.n_clusters, input_shape[-1]),
+                                    initializer=random_normal(mean=0.3, stddev=0.05, seed=self.seed),
+                                    trainable=True,
+                                    constraint=MinValue(min_value=self.epsilon) )
 
-        self.alpha = self.add_weight(name='alpha',
-                                     shape=(self.K,),
-                                     initializer=constant(value=(1/self.K)),
-                                     trainable=True)
+        self.alpha = self.add_weight( name='alpha',
+                                      shape=(self.n_clusters,),
+                                      initializer=constant( value=(1 / self.n_clusters) ),
+                                      trainable=True )
         super(GMM, self).build(input_shape)
 
     def call(self, x, **kwargs):
@@ -89,7 +89,7 @@ class GMM(Layer):
 
         # Preparing matrices
         x = K.reshape(x, (n_samples, D_dim))
-        x_rep = K.repeat_elements(x, self.K, axis=0)
+        x_rep = K.repeat_elements( x, self.n_clusters, axis=0 )
         mu_rep = K.tile(self.mu, (n_samples,1))
         sigma_rep = K.tile(self.std, (n_samples,1))
         alpha_rep = K.tile(self.alpha, (n_samples,))
@@ -107,20 +107,30 @@ class GMM(Layer):
         s_k = l_a_k + l_p_k
 
         if self.modeled_layer_type == 'Conv2d':
-            s_k = K.reshape(s_k, (B_dim, H_dim, W_dim, self.K))
+            s_k = K.reshape( s_k, (B_dim, H_dim, W_dim, self.n_clusters) )
         elif self.modeled_layer_type == 'Dense':
-            s_k = K.reshape(s_k, (B_dim, self.K))
+            s_k = K.reshape( s_k, (B_dim, self.n_clusters) )
 
         return s_k
 
     def compute_output_shape(self, input_shape):
         # output_shape = (1,)
         if self.modeled_layer_type == 'Conv2d':
-            output_shape = (input_shape[0], input_shape[1], input_shape[2], self.K)
+            output_shape = (input_shape[0], input_shape[1], input_shape[2], self.n_clusters)
         elif self.modeled_layer_type == 'Dense':
-            output_shape = (input_shape[0], self.K)
+            output_shape = (input_shape[0], self.n_clusters)
 
         return output_shape
+
+    def get_config(self):
+        config = {
+            'n_clusters': self.n_clusters,
+            'modeled_layer_type': self.modeled_layer_type,
+            'epsilon': self.epsilon
+        }
+        base_config = super(GMM, self).get_config()
+
+        return dict(list(base_config.items()) + list(config.items()))
 
 
 def get_layer_output(keras_model, layer_name, input_data, batch_size=32):

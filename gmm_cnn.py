@@ -1,53 +1,21 @@
 import os
-# sys.path.append(os.path.abspath(os.path.join('..', 'utils')))
-# os.environ['PYTHONPATH'] = os.path.abspath(os.path.join('..', 'utils'))
-import tensorflow as tf
-import random as rn
 import numpy as np
 
 from sklearn.metrics import confusion_matrix
 from keras.layers import (Input, Dense, GlobalAveragePooling2D, Flatten, Lambda, Activation)
-from keras.models import Model
+from keras.models import Model, load_model
 from keras.callbacks import ModelCheckpoint, CSVLogger, TensorBoard, TerminateOnNaN
 from keras.regularizers import l2
 from keras.applications.resnet50 import ResNet50
 from keras.applications.vgg16 import VGG16
 from keras.losses import categorical_crossentropy
-from keras.utils import plot_model
+from keras.utils import plot_model, CustomObjectScope
 from keras.utils.generic_utils import get_custom_objects
 from keras import backend as K
 from losses import build_gmm_loss
 from layers import GMM, gmm_bayes_activation, get_layer_output
-from utils.file import makedir
+from utils.file import makedir, save_to_file
 from utils.resnet import build_resnet
-
-os.environ['PYTHONHASHSEED'] = '0'
-# The below is necessary for starting Numpy generated random numbers
-# in a well-defined initial state.
-
-np.random.seed( 101 )
-
-# The below is necessary for starting core Python generated random numbers
-# in a well-defined state.
-
-rn.seed( 101 )
-
-# Force TensorFlow to use single thread.
-# Multiple threads are a potential source of non-reproducible results.
-# For further details, see: https://stackoverflow.com/questions/42022950/
-#
-session_conf = tf.ConfigProto( intra_op_parallelism_threads=1,
-                               inter_op_parallelism_threads=1 )
-
-# The below tf.set_random_seed() will make random number generation
-# in the TensorFlow backend have a well-defined initial state.
-# For further details, see:
-# https://www.tensorflow.org/api_docs/python/tf/set_random_seed
-
-tf.set_random_seed( 101 )
-
-sess = tf.Session( graph=tf.get_default_graph(), config=session_conf )
-K.set_session( sess )
 
 
 class Encoder( object ):
@@ -132,7 +100,6 @@ class GMM_CNN( Encoder ):
                  input_shape=(224, 224, 3),
                  n_classes=1000,
                  weight_decay=l2( 1e-4 ),
-                 histogram_freq=0,
                  seed=101,
                  hyper_lambda=1,
                  optimizer='sgd',
@@ -145,18 +112,18 @@ class GMM_CNN( Encoder ):
                  set_classification_layer_as_output=True,
                  freeze=True,
                  add_top=False,
-                 GMM_layers=None,
+                 layers_to_model=None,
                  weights_dir=None):
 
         # Fitting n_gaussians vector to be as the same length as the modeled layers
-        if isinstance( GMM_layers, str ):
-            GMM_layers = [GMM_layers]
-        if isinstance( GMM_layers, list ):
+        if isinstance( layers_to_model, str ):
+            layers_to_model = [layers_to_model]
+        if isinstance( layers_to_model, list ):
             if isinstance( n_gaussians, int ):
                 n_gaussians = [n_gaussians]
-            if len( n_gaussians ) != len( GMM_layers ):
+            if len( n_gaussians ) != len( layers_to_model ):
                 raise ValueError( '\'n_gaussians\' size have to by the same size and order as \'gmm_layers\'' )
-        else:
+        elif layers_to_model is not None:
             raise ValueError( 'GMM_layers have to receive a list (for multiple) or a string (for a single) value'
                               ' contains the layers name you want to model' )
 
@@ -169,10 +136,9 @@ class GMM_CNN( Encoder ):
         self.model_path = saving_dir
         self.weights_name_format = weights_name_format
         self.optimizer = optimizer
-        self.histogram_freq = histogram_freq
         self.input_shape = input_shape
         self.n_classes = n_classes
-        self.modeled_layers = GMM_layers
+        self.modeled_layers = layers_to_model
         self.training_method = training_method
         self.set_gmm_layer_as_output = set_gmm_layer_as_output
         self.set_gmm_activation_layer_as_output = set_gmm_activation_layer_as_output
@@ -206,15 +172,12 @@ class GMM_CNN( Encoder ):
             monitoring_name = 'val_' + self.gmm_layers[0] + '_loss'
 
         weights_checkpointer = ModelCheckpoint( filepath=os.path.join( self.model_path, self.weights_name_format ),
-                                                monitor=monitoring_name, save_best_only=True, save_weights_only=True )
+                                                monitor=monitoring_name, save_best_only=True, save_weights_only=False )
         self.save_model_plot()
 
         epoch_logger = CSVLogger( os.path.join( self.model_path, 'epoch_log.csv' ) )
         tensorboard_path = os.path.join( self.model_path, 'tensorboard' )
-        tensorboard = TensorBoard( log_dir=tensorboard_path,
-                                   histogram_freq=self.histogram_freq,
-                                   write_grads=(self.histogram_freq > 0),
-                                   update_freq='batch' )
+        tensorboard = TensorBoard( log_dir=tensorboard_path, update_freq='epoch' )
 
         terminator = TerminateOnNaN()
 
@@ -368,9 +331,40 @@ class GMM_CNN( Encoder ):
         self.keras_model.load_weights( path, by_name=True )
         print( 'Loaded weights from file.' )
 
+    def load_model(self, keras_model_path, config):
+
+        with CustomObjectScope( {'GMM': GMM, 'gmm_bayes_activation': gmm_bayes_activation} ):
+            self.keras_model = load_model( keras_model_path )
+
+        self.__init__( n_gaussians=config['n_gaussians'],
+                       input_shape=config['input_shape'],
+                       n_classes=config['n_classes'],
+                       seed=config['seed'],
+                       hyper_lambda=config['hyper_lambda'],
+                       optimizer=config['optimizer'],
+                       saving_dir=config['model_path'],
+                       weights_name_format=config['weights_name_format'],
+                       training_method=config['training_method'],
+                       network_name=config['network_name'],
+                       set_gmm_activation_layer_as_output=config['set_gmm_activation_layer_as_output'],
+                       set_gmm_layer_as_output=config['set_gmm_layer_as_output'],
+                       set_classification_layer_as_output=config['set_classification_layer_as_output'],
+                       freeze=config['freeze'],
+                       layers_to_model=config['modeled_layers'],
+                       weights_dir=config['weights_dir'],
+                       add_top=config['add_top']
+                       )
+
+        self.metrics_dict = config['metrics_dict']
+        self.gmm_dict = config['gmm_dict']
+        self.gmm_activations_dict = config['gmm_activations_dict']
+        self.classifiers_dict = config['classifiers_dict']
+        self.gmm_layers = config['gmm_layers']
+
     def fit(self, x=None, y=None, batch_size=None, epochs=1, validation_split=0.2, validation_data=None):
 
         callbacks = self._build_callbacks()
+        self.save_config()
 
         if validation_data is not None:
             history = self.keras_model.fit( x=np.array( x ), y=y, batch_size=batch_size,
@@ -387,6 +381,7 @@ class GMM_CNN( Encoder ):
     def fit_generator(self, datagen=None, x=None, y=None, batch_size=None, epochs=1, validation_data=None):
 
         callbacks = self._build_callbacks()
+        self.save_config()
 
         if x is not None:
             history = self.keras_model.fit_generator( datagen.flow( x, y, batch_size=batch_size ),
@@ -568,10 +563,10 @@ class GMM_CNN( Encoder ):
 
         for layer_name, gmm_layer_name in self.gmm_dict.items():
             layer_gmm_params[gmm_layer_name] = {}
+            K = keras_model.get_layer( gmm_layer_name ).n_clusters
 
             if layer_name == self.network_output_layer_name:
-                x = np.zeros( (keras_model.get_layer( gmm_layer_name ).K,
-                               keras_model.get_layer( gmm_layer_name ).K) )
+                x = np.zeros( (K, K) )
                 np.fill_diagonal( x, 1 )
                 layer_gmm_params[gmm_layer_name] = {}
                 layer_gmm_params[gmm_layer_name].update( {'mu': x} )
@@ -579,7 +574,7 @@ class GMM_CNN( Encoder ):
 
             else:
                 x = get_layer_output( keras_model, layer_name, data )
-                K = keras_model.get_layer( gmm_layer_name ).K
+                # K = keras_model.get_layer( gmm_layer_name ).K
 
                 if len( x.shape ) == 4:
                     B_dim = x.shape[0]
@@ -600,3 +595,34 @@ class GMM_CNN( Encoder ):
                 layer_gmm_params[gmm_layer_name].update( {'std': std} )
 
         return layer_gmm_params
+
+    def save_config(self):
+        config = {
+            'n_gaussians': self.n_gaussians,
+            'model_path': self.model_path,
+            'weights_name_format': self.weights_name_format,
+            'optimizer': self.optimizer,
+            'input_shape': self.input_shape,
+            'n_classes': self.n_classes,
+            'modeled_layers': self.modeled_layers,
+            'training_method': self.training_method,
+            'set_gmm_layer_as_output': self.set_gmm_layer_as_output,
+            'set_gmm_activation_layer_as_output': self.set_gmm_activation_layer_as_output,
+            'set_classification_layer_as_output': self.set_classification_layer_as_output,
+            'network_name': self.network_name,
+            'seed': self.seed,
+            'hyper_lambda': self.hyper_lambda,
+            'freeze': self.freeze,
+            'metrics_dict': self.metrics_dict,
+            'gmm_dict': self.gmm_dict,
+            'gmm_activations_dict': self.gmm_activations_dict,
+            'classifiers_dict': self.classifiers_dict,
+            'gmm_layers': self.gmm_layers,
+            'weights_dir': self.weights_dir,
+            'add_top': self.add_top
+        }
+
+        save_to_file( file_dir=self.model_path,
+                      objs_name=['config'],
+                      objs=[config] )
+

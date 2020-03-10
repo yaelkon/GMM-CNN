@@ -1,4 +1,5 @@
 import os
+import glob
 # sys.path.append(os.path.abspath(os.path.join('..', 'utils')))
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -13,66 +14,45 @@ from utils.file import load_from_file
 from utils.file import makedir
 from visualization.utils import crop_image, get_cifar10_labels
 
-ROOT_DIR = os.path.abspath(os.curdir)
-SAVING_DIR = pjoin(os.path.abspath(os.getcwd()), 'savings')
-WEIGHTS_DIR = pjoin(os.path.abspath(os.getcwd()), 'add_1_weights.09.hdf5')
+
+UTILS_DIR = '/tmp/'
+EXP_PATH = '/tmp/'
+
+model_dir = glob.glob( os.path.join( EXP_PATH, 'weights.*.hdf5' ) )
+model_dir = model_dir[-1]
+# Load config
+config = load_from_file(EXP_PATH, ['config'])[0]
+
+# Load model
+model = GMM_CNN()
+model.load_model(keras_model_path=model_dir, config=config)
 
 # Visualization parameters
 # How to vis the representatives images: 1. 'rectangle' around the origin image. 2. 'patches' draw only the rf
-vis_option = 'patches'
+vis_option = 'rectangle'
 label_fontsize = 26
-dot_radius = 1
+dot_radius = 0.5
 n_representatives = 6
 
 # make clusters saving directory
-vis_dir = pjoin(SAVING_DIR, 'clusters_vis')
+vis_dir = pjoin(EXP_PATH, 'clusters_vis')
 makedir(vis_dir)
-
-# --------- GMM parameters
-# Choose between 'generative' or 'discriminative' training loss
-GMM_training_method = 'discriminative'
-
-# --------- Data parameters
-input_shape = (32, 32, 3)
-
-# --------- Model parameters
-network_name = 'resnet20'
-modeled_layers_name = 'add_1'
-n_gaussians = [500]
 
 # get data
 (_, _), (X_images, y_val) = cifar10.load_data()
 y_one_hot = to_categorical(y_val, 10)
 class_labels = get_cifar10_labels()
 
-# Load model
-model = GMM_CNN(n_gaussians=n_gaussians,
-                input_shape=input_shape,
-                n_classes=10,
-                training_method=GMM_training_method,
-                saving_dir=SAVING_DIR,
-                GMM_layers=modeled_layers_name,
-                network_name=network_name,
-                set_classification_layer_as_output=False,
-                set_gmm_activation_layer_as_output=True,
-                set_gmm_layer_as_output=True)
-
-model.build_model()
-model.compile_model()
-
-# Loading GMM-CNN weights
-model.load_weights_from_file(WEIGHTS_DIR)
-
 clusters_rep_name = 'clusters_representatives'
 clusters_stats_name = 'clusters_stats'
-clusters_rep_path = os.path.join(SAVING_DIR, clusters_rep_name+'.json')
-clusters_stats_path = os.path.join(SAVING_DIR, clusters_stats_name+'.json')
+clusters_rep_path = os.path.join(UTILS_DIR, clusters_rep_name+'.json')
+clusters_stats_path = os.path.join(UTILS_DIR, clusters_stats_name+'.json')
 
 if os.path.isfile(clusters_rep_path) and os.access(clusters_rep_path, os.R_OK):
     # checks if file exists
     print("File exists and is readable")
     print("Load results...")
-    clusters_representatives = load_from_file(SAVING_DIR, [clusters_rep_name])[0]
+    clusters_representatives = load_from_file(UTILS_DIR, [clusters_rep_name])[0]
 
 else:
     raise ValueError("Either file is missing or is not readable")
@@ -81,7 +61,7 @@ if os.path.isfile(clusters_stats_path) and os.access(clusters_stats_path, os.R_O
     # checks if file exists
     print("File \'clusters_stats\' exists and is readable")
     print("Load results...")
-    clusters_stats = load_from_file(SAVING_DIR, [clusters_stats_name])[0]
+    clusters_stats = load_from_file(UTILS_DIR, [clusters_stats_name])[0]
 
 else:
     raise ValueError("Need to run \'gatherClustersStats\' script first")
@@ -105,7 +85,6 @@ for gmm_name in clusters_representatives:
         for c in clusters_representatives[gmm_name]:
             # If the cluster is empty -> don't draw it
             if clusters_stats[gmm_name][c] is not None:
-                    # and clusters_stats[gmm_name][c]['fullness_percent'] > 0:
                 nc_samples = len(clusters_representatives[gmm_name][c]['image'])
                 if nc_samples < n_representatives:
                     n_rep = nc_samples
@@ -131,7 +110,6 @@ for gmm_name in clusters_representatives:
                 fig, ax = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(10,8))
 
                 for j in range(n_rep):
-                    # if layer_rf_size[0] >= model.keras_model.input_shape[1]:
                     if unique:
                         index = unique_inds[j]
                     else:

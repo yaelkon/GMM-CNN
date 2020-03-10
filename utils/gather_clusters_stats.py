@@ -72,16 +72,16 @@ x_val -= x_val_mean
 n_data = y_one_hot.shape[0]
 
 interval = np.floor_divide(n_data, num_of_iterations)
-model = GMM_CNN(n_gaussians=n_gaussians,
-                input_shape=input_shape,
-                n_classes=10,
-                training_method=GMM_training_method,
-                saving_dir=SAVING_DIR,
-                GMM_layers=modeled_layers_name,
-                network_name=network_name,
-                set_classification_layer_as_output=False,
-                set_gmm_activation_layer_as_output=True,
-                set_gmm_layer_as_output=True)
+model = GMM_CNN( n_gaussians=n_gaussians,
+                 input_shape=input_shape,
+                 n_classes=10,
+                 training_method=GMM_training_method,
+                 saving_dir=SAVING_DIR,
+                 layers_to_model=modeled_layers_name,
+                 network_name=network_name,
+                 set_classification_layer_as_output=False,
+                 set_gmm_activation_layer_as_output=True,
+                 set_gmm_layer_as_output=True )
 
 model.build_model()
 model.compile_model()

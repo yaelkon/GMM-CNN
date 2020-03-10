@@ -1,6 +1,6 @@
 import os
 import numpy as np
-
+from os.path import join as pjoin
 from gmm_cnn import GMM_CNN
 from keras.datasets import cifar10
 from keras.utils import to_categorical
@@ -14,7 +14,7 @@ Define your experiment parameters below
 SAVING_DIR = '/tmp/'
 
 # A pre-trained network's weights - optional
-WEIGHTS_DIR = 'D:/GitHub/GMM-CNN/utils/cifar10_resnet20_weights.97.hdf5'
+WEIGHTS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils', 'cifar10_resnet20_weights.97.hdf5')
 
 # --------- GMM parameters
 # Choose between 'generative' or 'discriminative' training loss
@@ -33,7 +33,7 @@ n_gaussians = [10]
 
 # --------- Training parameters
 batch_size = 15
-num_epochs = 1
+num_epochs = 2
 
 
 # -----------------------   Prepare cifar 10 dataset    --------------------------
@@ -57,15 +57,15 @@ x_val -= x_train_mean
 
 # ------------------------   Begin Training  -------------------------------------
 
-model = GMM_CNN(n_gaussians=n_gaussians,
-                input_shape=input_shape,
-                n_classes=10,
-                training_method=GMM_training_method,
-                saving_dir=SAVING_DIR,
-                GMM_layers=layer_to_model,
-                network_name=network_name,
-                set_classification_layer_as_output=True,
-                weights_dir=WEIGHTS_DIR)
+model = GMM_CNN( n_gaussians=n_gaussians,
+                 input_shape=input_shape,
+                 n_classes=10,
+                 training_method=GMM_training_method,
+                 saving_dir=SAVING_DIR,
+                 layers_to_model=layer_to_model,
+                 network_name=network_name,
+                 set_classification_layer_as_output=True,
+                 weights_dir=WEIGHTS_DIR )
 
 model.build_model()
 model.compile_model()
