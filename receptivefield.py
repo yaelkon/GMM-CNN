@@ -1,5 +1,4 @@
 import numpy as np
-from keras.models import Model
 
 
 class ReceptiveField():
@@ -447,37 +446,3 @@ class ReceptiveField():
                                  return_UL_pos=return_upper_left_pos,
                                  return_origin_center=return_origin_center,
                                  return_origin_size=return_origin_size)
-
-    @staticmethod
-    def _set_weights_and_bias(keras_model, weight_int=1, bias_int=0):
-
-        for layer in keras_model.layers:
-            if type(layer).__name__ == 'Conv2D':
-                weights = layer.get_weights()
-                weights[0] = np.ones_like(weights[0]) * weight_int
-                weights[1] = np.ones_like(weights[1]) * bias_int
-                layer.set_weights(weights)
-
-        return keras_model
-
-    @staticmethod
-    def _calc_influence_input_neuron(keras_model, input_data):
-
-        intermediate_output = keras_model.predict(input_data)
-        single_map_output = intermediate_output[0, :, :, 0]
-        binary_output = np.zeros_like(single_map_output)
-        binary_output[np.where(single_map_output != 0)] = 1
-
-        return binary_output
-
-    @staticmethod
-    def _find_rectangle(image):
-        ones_indices = np.where(image != 0)
-
-        column_size = ones_indices[1][-1] - ones_indices[1][0] + 1
-        row_size = ones_indices[0][-1] - ones_indices[0][0] + 1
-
-        column_center = int((ones_indices[1][-1] + ones_indices[1][0]) / 2)
-        row_center = int((ones_indices[0][-1] + ones_indices[0][0]) / 2)
-
-        return (row_size, column_size), (row_center, column_center)

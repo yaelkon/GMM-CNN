@@ -151,7 +151,6 @@ class GMM_CNN( Encoder ):
         self.input_layer = None
         self.output_layers = None
         self.network_output_layer_name = None
-        self.keras_model = None
         self.losses = None
         self.metrics_dict = None
         self.gmm_dict = {}
@@ -174,6 +173,7 @@ class GMM_CNN( Encoder ):
         weights_checkpointer = ModelCheckpoint( filepath=os.path.join( self.model_path, self.weights_name_format ),
                                                 monitor=monitoring_name, save_best_only=True, save_weights_only=False )
         self.save_model_plot()
+        self.save_config()
 
         epoch_logger = CSVLogger( os.path.join( self.model_path, 'epoch_log.csv' ) )
         tensorboard_path = os.path.join( self.model_path, 'tensorboard' )
@@ -364,7 +364,6 @@ class GMM_CNN( Encoder ):
     def fit(self, x=None, y=None, batch_size=None, epochs=1, validation_split=0.2, validation_data=None):
 
         callbacks = self._build_callbacks()
-        self.save_config()
 
         if validation_data is not None:
             history = self.keras_model.fit( x=np.array( x ), y=y, batch_size=batch_size,
@@ -381,7 +380,6 @@ class GMM_CNN( Encoder ):
     def fit_generator(self, datagen=None, x=None, y=None, batch_size=None, epochs=1, validation_data=None):
 
         callbacks = self._build_callbacks()
-        self.save_config()
 
         if x is not None:
             history = self.keras_model.fit_generator( datagen.flow( x, y, batch_size=batch_size ),
@@ -404,12 +402,11 @@ class GMM_CNN( Encoder ):
                                  [self.keras_model.get_layer( name=layer_name ).output] )
         return get_output( [x, 0] )[0]
 
-    @staticmethod
-    def _create_preds_dict(preds, output_layers):
+    def _create_preds_dict(self, preds):
         print( 'finish predict' )
         preds_dict = {'GMM': {}, 'classification': {}}
 
-        for i, output_layer in enumerate( output_layers ):
+        for i, output_layer in enumerate( self.output_layers ):
             layer_type = type( output_layer ).__name__
             if layer_type == 'GMM':
                 gmm_pred = preds[i]
@@ -444,10 +441,37 @@ class GMM_CNN( Encoder ):
             for classification: array size N x n_classes with its score.
             for gmm: array size N * Height * Width * num_gaussians with log_likelihood (log p(h|x)) for each layer.
         """
+        self.output_layers = self.keras_model._output_layers.copy()
         preds = self.keras_model.predict( x, batch_size=batch_size )
-        output_layers = self.keras_model._output_layers
 
-        return self._create_preds_dict( preds, output_layers )
+        found_activation_in_outputs = False
+        found_gmm_in_outputs = False
+
+        for output in self.output_layers:
+            if type( output ).__name__ == 'Activation' and not found_activation_in_outputs:
+                found_activation_in_outputs = True
+            if type( output ).__name__ == 'GMM' and not found_gmm_in_outputs:
+                found_gmm_in_outputs = True
+
+        if (self.set_gmm_activation_layer_as_output and not found_activation_in_outputs) or \
+                (self.set_gmm_layer_as_output and not found_gmm_in_outputs):
+            # find all gmm_activation layers
+            for gmm_layer_name, activ_layer_name in self.gmm_activations_dict.items():
+
+                if self.set_gmm_activation_layer_as_output and not found_activation_in_outputs:
+                    act_layer = self.keras_model.get_layer(activ_layer_name)
+                    act_preds = get_layer_output(keras_model=self.keras_model,
+                                                 layer_name=activ_layer_name, input_data=x)
+                    self.output_layers.append(act_layer)
+                    preds.append(act_preds)
+
+                if self.set_gmm_layer_as_output and not found_gmm_in_outputs:
+                    gmm_layer = self.keras_model.get_layer(gmm_layer_name)
+                    gmm_preds = get_layer_output(keras_model=self.keras_model, layer_name=gmm_layer_name, input_data=x)
+                    self.output_layers.append(gmm_layer)
+                    preds.append(gmm_preds)
+
+        return self._create_preds_dict( preds )
 
     def predict_generator(self, generator, steps=None):
         preds = self.keras_model.predict_generator( generator, steps )

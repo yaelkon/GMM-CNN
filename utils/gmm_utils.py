@@ -5,6 +5,52 @@ np.random.seed(101)
 set_random_seed(101)
 
 
+def get_most_likely_clusters(gmm_preds):
+    """Returns the most likely cluster each spatial example is associated with, and keep the spatial dimension
+    Args:
+        gmm_preds(np array) - size (B, H, W, K) with the probability of P(h=k|x) in each cell as returns from
+                              gmm_model.predict function.
+    Returns:
+          clusters_mat(np array) - size (B, H, W) with the index of the most likely cluster in each cell
+                                    (i.e. each spatial example).
+        """
+    if isinstance(gmm_preds, list):
+        n_gmm_layers = len(gmm_preds)
+    else:
+        n_gmm_layers = 1
+
+    clusters_layers_list = []
+    for i in range(n_gmm_layers):
+
+        if isinstance(gmm_preds, list):
+            preds_tens = gmm_preds[i]
+        else:
+            preds_tens = gmm_preds
+
+        tens_shape = np.shape(preds_tens)
+
+        if len(tens_shape) == 2:
+            arg_max_tens = np.argmax(preds_tens, axis=1)
+
+        elif len(tens_shape) == 4:
+            B_dim = tens_shape[0]
+            H_dim = tens_shape[1]
+            W_dim = tens_shape[2]
+            n_samples = B_dim * H_dim * W_dim
+
+            K_dim = tens_shape[3]
+            re_tens = np.reshape(preds_tens, (n_samples, K_dim))
+            re_argsmax_tens = np.argmax(re_tens, axis=1)
+            arg_max_tens = np.reshape(re_argsmax_tens, (B_dim, H_dim, W_dim))
+
+        clusters_layers_list.append(arg_max_tens)
+
+    if n_gmm_layers == 1:
+        return clusters_layers_list[0]
+    else:
+        return clusters_layers_list
+
+
 def find_max(outputs_gmm_tens, outputs_llr_tens=None, n_max=10):
     """Finds the most likely n_max examples of each cluster
     Args:
@@ -204,6 +250,77 @@ def create_cluster_stats(labels, clusters_rep, n_samples):
             clusters_stats[c] = None
     return clusters_stats
 
+
+def calc_clusters_density_hist(n_explained_clusters, n_explaining_clusters, explained_clusters, explaining_clusters):
+    """Counts the histogram of each appearance in depended clusters that associate with given clusters
+    Args:
+        n_explained_clusters(int) - the number of clusters layer L, that associates with them, contains.
+        n_explaining_clusters(int) - the number of clusters layer L-1, that associates with them, contains.
+        explained_clusters(int np array) - a vector contains the cluster index of a specific spatial location example across
+                                       the batch. size (batch,1)
+        explaining_clusters(int np array) - a tensor contains the cluster's index of the spatial examples that belong to
+                                          the RF of the spatial example location in given_clusters vec according to
+                                          layer L-1. size (batch, h, w) where h and w represents the size of the RF.
+    """
+
+    hist_mat = np.zeros((n_explained_clusters, n_explaining_clusters))
+
+    for explained_k in range(n_explained_clusters):
+        args = np.where(explained_clusters == explained_k)[0]
+        corr_explaining_clusters = explaining_clusters[args]
+        unique, counts = np.unique(corr_explaining_clusters, return_counts=True)
+
+        hist_mat[explained_k, unique] = counts
+
+    return hist_mat
+
+
+def spatial_pairwise_hist(rf, explained_layer_name, explaining_layer_name, explained_gmm_preds, explaining_gmm_preds):
+    """
+    Calculate the p(h(L-1) = i | h(L) = j) where h is the cluster index in layer L.
+
+    Args:
+        rf (RF obj) - an RF object as define in receptivefield.py file.
+        gmm_model(gmm_classification_model obj) - as given by gmm_classification_model_v3.py
+        explained_layer_name(string) - the given layer name L (must be a GMM layer).
+        explaining_layer_name (string) - (optional)the target layer name L-1 (must be a GMM layer).
+        data(np array) - data to inference. size (batch, height, width, channels)
+    Return:
+         clusters_prob_mat (np array) - size (n_clusters_L-1, n_clusters_L). The value in each cell (i,j) represents the
+                                        probability of a sample belonging to cluster i in layer 'target_layer_name',
+                                        given that it was associated to cluster j in layer 'given_layer_name'.
+    """
+
+    explained_k_mat = get_most_likely_clusters(explained_gmm_preds)
+    explaining_k_mat = get_most_likely_clusters(explaining_gmm_preds)
+
+    explained_tens_shape = np.shape(explained_gmm_preds)
+    H_dim = explained_tens_shape[1]
+    W_dim = explained_tens_shape[2]
+
+    n_explained_clusters = explained_tens_shape[-1]
+    n_explaining_clusters = np.shape(explaining_gmm_preds)[-1]
+
+    tot_clusters_hist = np.zeros((n_explained_clusters, n_explaining_clusters))
+
+    for h in range(H_dim):
+        for w in range(W_dim):
+            size, center, UL_pos = rf.target_neuron_rf(explained_layer_name, [h, w],
+                                                       rf_layer_name=explaining_layer_name,
+                                                       return_upper_left_pos=True)
+            upper_left_row = UL_pos[0]
+            upper_left_col = UL_pos[1]
+
+            rf_target_batch = explaining_k_mat[:, upper_left_row:upper_left_row+size[0],
+                                               upper_left_col:upper_left_col+size[1]]
+            given_clusters_vec = explained_k_mat[:,h,w]
+
+            clusters_hist = calc_clusters_density_hist(n_explained_clusters, n_explaining_clusters,
+                                                       given_clusters_vec, rf_target_batch)
+
+            tot_clusters_hist += clusters_hist
+
+    return tot_clusters_hist
 
 
 

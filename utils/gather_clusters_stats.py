@@ -4,7 +4,7 @@ from os.path import join as pjoin
 from gmm_cnn import GMM_CNN
 from keras.datasets import cifar10
 from keras.utils import to_categorical
-from utils.file import save_to_file
+from utils.file import save_to_file, load_from_file
 from utils.gmm_utils import find_max, get_cluster_reps, create_cluster_stats
 
 
@@ -31,33 +31,30 @@ def merge_dicts(*dicts, option=1):
 
     return d
 
-SAVING_DIR = pjoin(os.path.abspath(os.getcwd()), 'savings')
-WEIGHTS_DIR = pjoin(os.path.abspath(os.getcwd()), 'add_1_weights.09.hdf5')
 
-# --------- GMM parameters
-# Choose between 'generative' or 'discriminative' training loss
-GMM_training_method = 'discriminative'
-
-# --------- Data parameters
-input_shape = (32, 32, 3)
-
-# --------- Model parameters
-network_name = 'resnet20'
-modeled_layers_name = 'add_1'
-n_gaussians = [500]
+EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
 
 # --------- Algorithm parameters
 # Specify the number of representatives for each cluster to save
 n_cluster_reps_to_save = 100
 # Equals for number of batches (not batch size!)
-num_of_iterations = 20
+num_of_iterations = 10
 
-if not os.path.exists( SAVING_DIR ):
-    os.makedirs( SAVING_DIR )
+# Get the saved model
+model_dir = os.path.join( EXP_PATH, 'keras_model.hdf5' )
+# Load config
+config = load_from_file(EXP_PATH, ['config'])[0]
+# Load model
+model = GMM_CNN()
+model.load_model(keras_model_path=model_dir, config=config)
+model.set_classification_layer_as_output = False
+model.set_gmm_activation_layer_as_output = True
+model.set_gmm_layer_as_output = True
+
+model.compile_model()
 
 # -----------------------   Prepare cifar 10 dataset    --------------------------
 (_, _), (x_val, y_val) = cifar10.load_data()
-
 # Convert class vectors to binary class matrices.
 y_one_hot = to_categorical(y_val, 10)
 
@@ -70,25 +67,7 @@ x_val_mean = np.mean(x_val, axis=0)
 x_val -= x_val_mean
 
 n_data = y_one_hot.shape[0]
-
 interval = np.floor_divide(n_data, num_of_iterations)
-model = GMM_CNN( n_gaussians=n_gaussians,
-                 input_shape=input_shape,
-                 n_classes=10,
-                 training_method=GMM_training_method,
-                 saving_dir=SAVING_DIR,
-                 layers_to_model=modeled_layers_name,
-                 network_name=network_name,
-                 set_classification_layer_as_output=False,
-                 set_gmm_activation_layer_as_output=True,
-                 set_gmm_layer_as_output=True )
-
-model.build_model()
-model.compile_model()
-
-# Loading GMM-CNN weights
-model.load_weights_from_file(WEIGHTS_DIR)
-
 
 clusters_stats_dict = {}
 clusters_rep_dict = {}
@@ -144,7 +123,7 @@ for gmm_output_layer in model.gmm_dict.values():
     print('finish gathering results for layer ' + gmm_output_layer)
 
 print('saving results')
-save_to_file(file_dir=SAVING_DIR,
+save_to_file(file_dir=EXP_PATH,
              objs_name=['clusters_stats', 'clusters_representatives'],
              objs=[clusters_stats_dict, clusters_rep_dict])
 
