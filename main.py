@@ -11,7 +11,7 @@ An experiment pip for modeling CNN layers with GMM.
 Define your experiment parameters below
 """
 
-SAVING_DIR = '/tmp/'
+SAVING_DIR = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
 
 # A pre-trained network's weights - optional
 WEIGHTS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils', 'cifar10_resnet20_weights.97.hdf5')
@@ -26,14 +26,14 @@ input_shape = (32, 32, 3)
 # --------- Model parameters
 network_name = 'resnet20'
 # Specify the layer name as str to model or a list contains str layer names for multiple modeled layers
-layer_to_model = 'classification'
+layer_to_model = ['add_2', 'add_4', 'add_6', 'add_8', 'classification']
 # Specify the number of clusters each GMM will contain.
 # The clusters order has to be matched to the order specified in 'layer_to_model' arg.
-n_gaussians = [10]
+n_gaussians = [500, 500, 500, 500, 10]
 
 # --------- Training parameters
-batch_size = 15
-num_epochs = 2
+batch_size = 5
+num_epochs = 10
 
 
 # -----------------------   Prepare cifar 10 dataset    --------------------------

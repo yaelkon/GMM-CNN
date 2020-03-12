@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import glob
 from os.path import join as pjoin
 from gmm_cnn import GMM_CNN
 from keras.datasets import cifar10
@@ -38,20 +39,22 @@ EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cif
 # Specify the number of representatives for each cluster to save
 n_cluster_reps_to_save = 100
 # Equals for number of batches (not batch size!)
-num_of_iterations = 10
+num_of_iterations = 5
 
 # Get the saved model
-model_dir = os.path.join( EXP_PATH, 'keras_model.hdf5' )
+# model_dir = os.path.join( EXP_PATH, 'keras_model.hdf5' )
+
 # Load config
 config = load_from_file(EXP_PATH, ['config'])[0]
+config['set_classification_layer_as_output'] = False
+config['set_gmm_activation_layer_as_output'] = True
+config['set_gmm_layer_as_output'] = True
+
+list_of_weights = glob.glob( pjoin( EXP_PATH, 'weights.*.hdf5' ) )
+weights_dir = list_of_weights[-1]
 # Load model
 model = GMM_CNN()
-model.load_model(keras_model_path=model_dir, config=config)
-model.set_classification_layer_as_output = False
-model.set_gmm_activation_layer_as_output = True
-model.set_gmm_layer_as_output = True
-
-model.compile_model()
+model.load_model(weights_dir=weights_dir, config=config)
 
 # -----------------------   Prepare cifar 10 dataset    --------------------------
 (_, _), (x_val, y_val) = cifar10.load_data()
@@ -111,7 +114,7 @@ for gmm_output_layer in model.gmm_dict.values():
         W_dim = shape[2]
         n_samples = B_dim * H_dim * W_dim
     else:
-        raise ValueError('the output shape must be either 4 for convolutional layer or'
+        raise ValueError('The output shape must be either 4 for convolutional layer or'
                          ' 2 for dense layer, but got: {len(shape)}')
 
     clusters_rep_to_save = get_cluster_reps(tot_clusters_rep_to_save, H_dim, W_dim, n_cluster_reps_to_save)

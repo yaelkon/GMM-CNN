@@ -17,7 +17,6 @@ class Inference_Graph:
                  header_font_size='50',
                  heat_map_connections=False,
                  node_type='patches',
-                 level_gap=1,
                  saving_format='png',
                  saving_dir='/tmp/',
                  heat_map_path=None,
@@ -29,7 +28,6 @@ class Inference_Graph:
         self.connections_dict = connections_dict
         self.imgs_path = imgs_path
         self.node_type = node_type
-        self.gap = level_gap
         self.saving_format = saving_format
         self.saving_dir = saving_dir
         self.heat_map_dir = heat_map_path
@@ -54,40 +52,6 @@ class Inference_Graph:
 
         connections_dict = self.connections_dict
 
-        if self.gap > 1:
-            self.reduced_connections_dict = {}
-            nodes = self.connections_dict['class']
-            self.reduced_connections_dict['class'] = nodes
-            reached_last_level = False
-
-            while not reached_last_level:
-                temp_nodes = []
-
-                for node in nodes:
-                    temp_node = node
-                    for i in range(self.gap - 1):
-                        if temp_node in self.connections_dict:
-                            temp_node = self.connections_dict[temp_node][0]
-                        else:
-                            reached_last_level = True
-                            break
-
-                    if reached_last_level:
-                        break
-                    else:
-                        gap_nodes = self.connections_dict[temp_node]
-                        temp_nodes += gap_nodes
-                        self.reduced_connections_dict.update({node: gap_nodes})
-
-                nodes = np.unique(temp_nodes)
-
-                if nodes[0] not in self.connections_dict:
-                    reached_last_level = True
-
-            # Set the first layer as nodes without connections
-            for node in nodes:
-                self.reduced_connections_dict.update({node: []})
-            connections_dict = self.reduced_connections_dict
         levels_dict = {}
         for node in connections_dict:
             if node == 'class':

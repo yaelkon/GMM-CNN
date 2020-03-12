@@ -102,7 +102,7 @@ class GMM_CNN( Encoder ):
                  weight_decay=l2( 1e-4 ),
                  seed=101,
                  hyper_lambda=1,
-                 optimizer='sgd',
+                 optimizer='Adam',
                  saving_dir='/tmp/',
                  weights_name_format='weights.{epoch:02d}.hdf5',
                  training_method='generative',
@@ -250,7 +250,7 @@ class GMM_CNN( Encoder ):
             if self.set_gmm_activation_layer_as_output or self.training_method == 'discriminative':
                 get_custom_objects().update( {'gmm_bayes_activation': Activation( gmm_bayes_activation )} )
                 x = Activation( gmm_bayes_activation, name='activation_' + gmm_name )( layer )
-                self.gmm_activations_dict.update( {layer_name: 'activation_' + gmm_name} )
+                self.gmm_activations_dict.update( {gmm_name: 'activation_' + gmm_name} )
                 layers_array.append( x )
 
             if self.set_gmm_activation_layer_as_output:
@@ -331,10 +331,10 @@ class GMM_CNN( Encoder ):
         self.keras_model.load_weights( path, by_name=True )
         print( 'Loaded weights from file.' )
 
-    def load_model(self, keras_model_path, config):
+    def load_model(self, config, weights_dir=None):
 
-        with CustomObjectScope( {'GMM': GMM, 'gmm_bayes_activation': gmm_bayes_activation} ):
-            self.keras_model = load_model( keras_model_path )
+        # with CustomObjectScope( {'GMM': GMM, 'gmm_bayes_activation': gmm_bayes_activation} ):
+        #     self.keras_model = load_model( keras_model_path )
 
         self.__init__( n_gaussians=config['n_gaussians'],
                        input_shape=config['input_shape'],
@@ -354,12 +354,16 @@ class GMM_CNN( Encoder ):
                        weights_dir=config['weights_dir'],
                        add_top=config['add_top']
                        )
+        self.build_model()
+        if weights_dir is not None:
+            self.load_weights_from_file(weights_dir)
+        self.compile_model()
 
-        self.metrics_dict = config['metrics_dict']
-        self.gmm_dict = config['gmm_dict']
-        self.gmm_activations_dict = config['gmm_activations_dict']
-        self.classifiers_dict = config['classifiers_dict']
-        self.gmm_layers = config['gmm_layers']
+        # self.metrics_dict = config['metrics_dict']
+        # self.gmm_dict = config['gmm_dict']
+        # self.gmm_activations_dict = config['gmm_activations_dict']
+        # self.classifiers_dict = config['classifiers_dict']
+        # self.gmm_layers = config['gmm_layers']
 
     def fit(self, x=None, y=None, batch_size=None, epochs=1, validation_split=0.2, validation_data=None):
 
@@ -402,11 +406,12 @@ class GMM_CNN( Encoder ):
                                  [self.keras_model.get_layer( name=layer_name ).output] )
         return get_output( [x, 0] )[0]
 
-    def _create_preds_dict(self, preds):
+    @staticmethod
+    def _create_preds_dict(preds, output_layers):
         print( 'finish predict' )
         preds_dict = {'GMM': {}, 'classification': {}}
 
-        for i, output_layer in enumerate( self.output_layers ):
+        for i, output_layer in enumerate( output_layers ):
             layer_type = type( output_layer ).__name__
             if layer_type == 'GMM':
                 gmm_pred = preds[i]
@@ -441,37 +446,10 @@ class GMM_CNN( Encoder ):
             for classification: array size N x n_classes with its score.
             for gmm: array size N * Height * Width * num_gaussians with log_likelihood (log p(h|x)) for each layer.
         """
-        self.output_layers = self.keras_model._output_layers.copy()
+        output_layers = self.keras_model._output_layers.copy()
         preds = self.keras_model.predict( x, batch_size=batch_size )
 
-        found_activation_in_outputs = False
-        found_gmm_in_outputs = False
-
-        for output in self.output_layers:
-            if type( output ).__name__ == 'Activation' and not found_activation_in_outputs:
-                found_activation_in_outputs = True
-            if type( output ).__name__ == 'GMM' and not found_gmm_in_outputs:
-                found_gmm_in_outputs = True
-
-        if (self.set_gmm_activation_layer_as_output and not found_activation_in_outputs) or \
-                (self.set_gmm_layer_as_output and not found_gmm_in_outputs):
-            # find all gmm_activation layers
-            for gmm_layer_name, activ_layer_name in self.gmm_activations_dict.items():
-
-                if self.set_gmm_activation_layer_as_output and not found_activation_in_outputs:
-                    act_layer = self.keras_model.get_layer(activ_layer_name)
-                    act_preds = get_layer_output(keras_model=self.keras_model,
-                                                 layer_name=activ_layer_name, input_data=x)
-                    self.output_layers.append(act_layer)
-                    preds.append(act_preds)
-
-                if self.set_gmm_layer_as_output and not found_gmm_in_outputs:
-                    gmm_layer = self.keras_model.get_layer(gmm_layer_name)
-                    gmm_preds = get_layer_output(keras_model=self.keras_model, layer_name=gmm_layer_name, input_data=x)
-                    self.output_layers.append(gmm_layer)
-                    preds.append(gmm_preds)
-
-        return self._create_preds_dict( preds )
+        return self._create_preds_dict( preds, output_layers )
 
     def predict_generator(self, generator, steps=None):
         preds = self.keras_model.predict_generator( generator, steps )

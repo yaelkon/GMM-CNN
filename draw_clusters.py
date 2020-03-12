@@ -16,14 +16,12 @@ from utils.vis_utils import crop_image, get_cifar10_labels
 
 EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
 
-# Get the saved model
-model_dir = os.path.join( EXP_PATH, 'keras_model.hdf5' )
 # Load config
 config = load_from_file(EXP_PATH, ['config'])[0]
 
 # Load model
 model = GMM_CNN()
-model.load_model(keras_model_path=model_dir, config=config)
+model.load_model(config=config)
 
 # Visualization parameters
 # How to vis the representatives images: 1. 'rectangle' around the origin image. 2. 'patches' draw only the rf
@@ -176,7 +174,10 @@ for gmm_name in clusters_representatives:
                 else:
                     ax[row, col].set_title(img_label, fontdict={'fontsize': label_fontsize})
 
-            fig_dir = os.path.join(layer_dir, 'cluster_' + c + '_' + vis_option + '.png')
+            if fc_flag:
+                fig_dir = os.path.join( layer_dir, 'cluster_' + c + '.png' )
+            else:
+                fig_dir = os.path.join(layer_dir, 'cluster_' + c + '_' + vis_option + '.png')
 
             for row in range(n_rows):
                 for col in range(n_cols):

@@ -284,12 +284,7 @@ def create_clusters_for_imageGraph(vis_image, image_array, image_false_label, tr
             k_dir = pjoin(*[clusters_dir, layer_name, k_name])
             cluster_img = mpimg.imread(k_dir)
 
-            if '6' in layer_name or '5' in layer_name or '4' in layer_name or '16' in layer_name or '13' in layer_name:
-                radius_size = 3
-            elif '3' in layer_name:
-                radius_size = 2
-            else:
-                radius_size = 0.75
+            radius_size = 0.5
 
             if image_pos == 't':
                 ax[1].imshow(cluster_img)
@@ -350,6 +345,4 @@ def create_clusters_for_imageGraph(vis_image, image_array, image_false_label, tr
         ax[1].axis('off')
         plt.savefig(pjoin(saving_dir, layer_name + '_' + k_name), bbox_inches='tight', pad_inches=0)
         plt.close(fig)
-
-
 
