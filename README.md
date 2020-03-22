@@ -2,10 +2,9 @@
 This code package implements the modeling of CNN layers activity with Gaussian mixture model and Inference Graphs visualization technique from the paper "Inference graphs for CNN Interpretation". 
 
 ## Requirements:
-- Graphvis V
-- Tensorflow
-- Keras
-- Numpy
+- Graphvis V 0.10.1
+- Tensorflow 1.11.0
+- Keras 2.2.5
 
 ## Instructions - Work Flow
 ### GMM-CNN model training (main.py):
