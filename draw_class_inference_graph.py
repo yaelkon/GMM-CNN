@@ -20,7 +20,7 @@ head_classes = ['truck']
 n_nodes_in_graph = 3
 edge_label_font_size = '22'
 header_font_size = '40'
-add_heat_map_on_connections = True
+add_heat_map_on_connections = False
 calc_heat_map_on_connections = False
 
 # Specify the layers to visualize and the visualization technique for each layer ('rectangle'/'patches')
