@@ -542,7 +542,7 @@ class GMM_CNN( Encoder ):
                     classifier_layer = self.keras_model.get_layer( classifier_layer_name )
                     classifier_weights = classifier_layer.get_weights()
                     classifier_weights[0] = np.ones_like( classifier_weights[0] ) * \
-                                            gmms_params_dict[layer.name]['mu'][0]
+                                            gmms_params_dict[layer.name]['mu']
                     classifier_layer.set_weights( classifier_weights )
 
             elif layer_type == 'Dense' or layer_type == 'Conv2D':
