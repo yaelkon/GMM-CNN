@@ -20,3 +20,9 @@ def get_cifar10_watermarks_dict():
             'ship': 'S',
             'truck': 'T'
             }
+
+def get_watermarked_labels_by_exp_num(exp_num):
+    if exp_num==1:
+        return {'plane','car'}
+    elif exp_num==2:
+        return {'bird', 'cat'}

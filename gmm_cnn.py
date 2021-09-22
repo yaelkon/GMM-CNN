@@ -13,7 +13,7 @@ from keras.utils import plot_model, CustomObjectScope
 from keras.utils.generic_utils import get_custom_objects
 from keras import backend as K
 from losses import build_gmm_loss
-from layers import GMM, gmm_bayes_activation, get_layer_output
+from layers import GMM, gmm_bayes_activation, get_layer_output, MaxOut
 from utils.file import makedir, save_to_file
 from utils.resnet import build_resnet
 
@@ -110,6 +110,7 @@ class GMM_CNN( Encoder ):
                  set_gmm_activation_layer_as_output=False,
                  set_gmm_layer_as_output=False,
                  set_classification_layer_as_output=True,
+                 max_out=False,
                  freeze=True,
                  add_top=False,
                  layers_to_model=None,
@@ -147,6 +148,7 @@ class GMM_CNN( Encoder ):
         self.seed = seed
         self.hyper_lambda = hyper_lambda
         self.freeze = freeze
+        self.max_out = max_out
 
         self.input_layer = None
         self.output_layers = None
@@ -159,7 +161,8 @@ class GMM_CNN( Encoder ):
         self.classifiers_dict = {}
 
     def save_model_plot(self):
-        plot_model( self.keras_model, to_file=os.path.join( self.model_path, 'model.png' ) )
+        # plot_model( self.keras_model, to_file=os.path.join( self.model_path, 'model.png' ) )
+        pass
 
     def _build_callbacks(self):
         """Builds callbacks for training model.
@@ -172,7 +175,7 @@ class GMM_CNN( Encoder ):
 
         weights_checkpointer = ModelCheckpoint( filepath=os.path.join( self.model_path, self.weights_name_format ),
                                                 monitor=monitoring_name, save_best_only=True, save_weights_only=False )
-        self.save_model_plot()
+        # self.save_model_plot()
         self.save_config()
 
         epoch_logger = CSVLogger( os.path.join( self.model_path, 'epoch_log.csv' ) )
@@ -218,6 +221,7 @@ class GMM_CNN( Encoder ):
         outputs_array = []
         layers_array = []
         for i in range( len( encoded ) ):
+
             layer_name = encoded[i].name.rsplit( '/', 1 )[0]
             x = encoded[i]
 
@@ -233,13 +237,20 @@ class GMM_CNN( Encoder ):
                 self.gmm_layers.append( gmm_name )
 
             elif len( x.shape ) == 4:
+
+
                 gmm_name = 'gmm_' + layer_name
                 stop_grad_layer = Lambda( lambda x: K.stop_gradient( x ), name='stop_grad_layer_' + layer_name )( x )
-                layer = GMM( n_clusters=self.n_gaussians[i],
-                             seed=self.seed,
-                             name=gmm_name )( stop_grad_layer )
-                self.gmm_dict.update( {layer_name: gmm_name} )
-                self.gmm_layers.append( gmm_name )
+                if self.max_out:
+                    layer = MaxOut(n_clusters=self.n_gaussians[i],
+                                seed=self.seed,
+                                name=gmm_name)(stop_grad_layer)
+                else:
+                    layer = GMM( n_clusters=self.n_gaussians[i],
+                                 seed=self.seed,
+                                 name=gmm_name )( stop_grad_layer)
+                self.gmm_dict.update( {layer_name: gmm_name})
+                self.gmm_layers.append( gmm_name)
 
             else:
                 raise ValueError( f'the modeled layer tensor shape must be either 2 or 4, but got: {len(x.shape)}' )
@@ -248,10 +259,11 @@ class GMM_CNN( Encoder ):
                 outputs_array.append( layer )
 
             if self.set_gmm_activation_layer_as_output or self.training_method == 'discriminative':
-                get_custom_objects().update( {'gmm_bayes_activation': Activation( gmm_bayes_activation )} )
-                x = Activation( gmm_bayes_activation, name='activation_' + gmm_name )( layer )
-                self.gmm_activations_dict.update( {gmm_name: 'activation_' + gmm_name} )
-                layers_array.append( x )
+                if not self.max_out:
+                    get_custom_objects().update( {'gmm_bayes_activation': Activation( gmm_bayes_activation )} )
+                    x = Activation( gmm_bayes_activation, name='activation_' + gmm_name )( layer )
+                    self.gmm_activations_dict.update( {gmm_name: 'activation_' + gmm_name} )
+                    layers_array.append( x )
 
             if self.set_gmm_activation_layer_as_output:
                 outputs_array.append( x )
@@ -277,6 +289,7 @@ class GMM_CNN( Encoder ):
 
         outputs, encoded2 = self._build_gmm_layers( encoded[1:] )
         if self.training_method == 'discriminative':
+
             output2 = self._build_gmm_classifier_layers( encoded2 )
             outputs = outputs + output2
 

@@ -1,5 +1,6 @@
 import math
 
+from keras.utils import to_categorical
 from numpy.random import seed
 from tensorflow import set_random_seed
 from keras import backend as K
@@ -9,6 +10,7 @@ from keras.initializers import constant, random_normal
 from keras.utils.generic_utils import to_list
 from keras.utils.generic_utils import unpack_singleton
 from keras.constraints import  Constraint
+from tensorflow.python import bincount
 
 seed(101)
 set_random_seed(101)
@@ -110,6 +112,124 @@ class GMM(Layer):
             s_k = K.reshape( s_k, (B_dim, H_dim, W_dim, self.n_clusters) )
         elif self.modeled_layer_type == 'Dense':
             s_k = K.reshape( s_k, (B_dim, self.n_clusters) )
+
+        return s_k
+
+    def compute_output_shape(self, input_shape):
+        # output_shape = (1,)
+        if self.modeled_layer_type == 'Conv2d':
+            output_shape = (input_shape[0], input_shape[1], input_shape[2], self.n_clusters)
+        elif self.modeled_layer_type == 'Dense':
+            output_shape = (input_shape[0], self.n_clusters)
+
+        return output_shape
+
+    def get_config(self):
+        config = {
+            'n_clusters': self.n_clusters,
+            'modeled_layer_type': self.modeled_layer_type,
+            'epsilon': self.epsilon
+        }
+        base_config = super(GMM, self).get_config()
+
+        return dict(list(base_config.items()) + list(config.items()))
+
+
+class MaxOut(Layer):
+    def __init__(self, n_clusters=2, epsilon=0.1, seed=101, modeled_layer_type='Conv2d', **kwargs):
+        self.n_clusters = n_clusters
+        self.epsilon = epsilon
+        self.seed = seed
+        self.mu = None
+        self.std = None
+        self.alpha = None
+        self.modeled_layer_type = modeled_layer_type
+
+        super(MaxOut, self).__init__(**kwargs)
+
+    def build(self, input_shape, x=None):
+        """       Create a trainable weight variable for this layer.
+            x must be a tensor object
+            input_shape - must have the shape (batch, height, width, channels) according to "channel_last" of Conv2D layer
+            reshape_input_shape - BHW * D
+
+            Note that the sigma values are saves as std, not as variance"""
+
+        # self.mu = self.add_weight( name='mu',
+        #                            shape=(self.n_clusters, input_shape[-1]),
+        #                            initializer=random_normal(mean=0, stddev=0.4, seed=self.seed),
+        #                            trainable=True )
+        #
+        # self.std = self.add_weight( name='std',
+        #                             shape=(self.n_clusters, input_shape[-1]),
+        #                             initializer=random_normal(mean=0.3, stddev=0.05, seed=self.seed),
+        #                             trainable=True,
+        #                             constraint=MinValue(min_value=self.epsilon) )
+        #
+        # self.alpha = self.add_weight( name='alpha',
+        #                               shape=(self.n_clusters,),
+        #                               initializer=constant( value=(1 / self.n_clusters) ),
+        #                               trainable=True )
+        super(MaxOut, self).build(input_shape)
+
+    def call(self, x, **kwargs):
+        """     x must be a tensor object
+            input_shape - must have the shape (batch, height, width, channels) according to "channel_last" of Conv2D layer
+            reshape_input_shape - BHW * D
+        """
+        # Preventing from a gradient explosion
+        # self.std = K.maximum(self.std, self.epsilon)
+        # self.alpha = K.exp(self.alpha)
+        # self.alpha = self.alpha / K.sum(self.alpha)
+        #
+        x_dim = K.shape(x)
+        #
+        if self.modeled_layer_type == 'Conv2d':
+            pool_dim = K.stack([x_dim[0], x_dim[1], x_dim[2], x_dim[3]])
+            B_dim = pool_dim[0]
+            H_dim = pool_dim[1]
+            W_dim = pool_dim[2]
+            D_dim = pool_dim[3]
+            n_samples = B_dim * H_dim * W_dim
+
+        elif self.modeled_layer_type == 'Dense':
+            pool_dim = K.stack([x_dim[0], x_dim[1]])
+            B_dim = pool_dim[0]
+            D_dim = pool_dim[1]
+            n_samples = B_dim
+
+        # Preparing matrices
+        self.n_clusters = D_dim
+
+        output = K.zeros(x.shape)
+        max_args = K.argmax(x,3)
+
+        mask = K.cast(max_args)
+
+        # s_k = bincount(bincount(max_args,axis=-1))
+
+        # x = K.reshape(x, (n_samples, D_dim))
+        # x_rep = K.repeat_elements( x, self.n_clusters, axis=0 )
+        # mu_rep = K.tile(self.mu, (n_samples,1))
+        # sigma_rep = K.tile(self.std, (n_samples,1))
+        # alpha_rep = K.tile(self.alpha, (n_samples,))
+        #
+        # # Calculating the log likelihood function in log scale
+        # dist = K.square(x_rep - mu_rep) / K.square(sigma_rep)
+        # exponent = -(1 / 2.0) * dist
+        # exponent = K.maximum(exponent, -10)
+        # cons = 2 * math.pi
+        # exp_coeff = (1 / (K.sqrt(cons * K.square(sigma_rep))))
+        # prob = exp_coeff * K.exp(exponent)
+        #
+        # l_p_k = K.sum(K.log(prob), axis=1)
+        # l_a_k = K.log(alpha_rep)
+        # s_k = l_a_k + l_p_k
+
+        # if self.modeled_layer_type == 'Conv2d':
+        #     s_k = K.reshape( s_k, (B_dim, H_dim, W_dim, self.n_clusters) )
+        # elif self.modeled_layer_type == 'Dense':
+        #     s_k = K.reshape( s_k, (B_dim, self.n_clusters) )
 
         return s_k
 

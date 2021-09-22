@@ -31,7 +31,8 @@ def add_watermark(image, text='T', fontsize=8, color=(255, 0, 0, 100), offX=None
     pil_image = pil_image.convert('RGBA')
     draw = ImageDraw.Draw(pil_image)
 
-    font = ImageFont.truetype("Ubuntu-R.ttf", fontsize)
+    # font = ImageFont.truetype("Ubuntu-R.ttf", fontsize)
+    font = ImageFont.load_default()
 
     # watermark font
     # watermark offset
@@ -43,7 +44,7 @@ def add_watermark(image, text='T', fontsize=8, color=(255, 0, 0, 100), offX=None
 
         x = int((img_width - fontsize)*offX)
         y = int((img_height - fontsize)*offY)
-        draw.text((x, y), text, fill=color, font=font)
+        draw.text((x, y), text, fill=color, font=font,fontsize=fontsize)
 
         # Keep transparent data
         # rgb_img = pil_image.convert('RGB')
