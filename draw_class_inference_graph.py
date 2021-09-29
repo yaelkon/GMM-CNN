@@ -13,9 +13,12 @@ from inference_graph import Inference_Graph
 from utils.IG_utils import gather_coOccurrance_mat, get_IG_connections_dict_LR,\
      create_connections_heat_maps
 from receptivefield import ReceptiveField
+from pathlib import Path
 
 
-EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
+exp_name = 'baseline'
+EXP_PATH = f"{Path(__file__).parent.parent}/PAMI_EXPDIR/"+exp_name
+# EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
 head_classes = ['truck']
 n_nodes_in_graph = 3
 edge_label_font_size = '22'
@@ -24,10 +27,10 @@ add_heat_map_on_connections = False
 calc_heat_map_on_connections = False
 
 # Specify the layers to visualize and the visualization technique for each layer ('rectangle'/'patches')
-vis_option = {'add_2': 'rectangle',
-              'add_4': 'rectangle',
-              'add_6': 'rectangle',
-              'add_8': 'rectangle'
+vis_option = {'add_2': 'patch',
+              'add_4': 'patch',
+              'add_6': 'patch',
+              'add_8': 'patch'
               }
 
 # Get the saved weights

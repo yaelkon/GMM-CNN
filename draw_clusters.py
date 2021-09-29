@@ -1,5 +1,6 @@
 import os
 from os.path import join as pjoin
+from pathlib import Path
 
 import matplotlib.patches as patches
 # sys.path.append(os.path.abspath(os.path.join('..', 'utils')))
@@ -14,8 +15,9 @@ from utils.file import load_from_file
 from utils.file import makedir
 from utils.vis_utils import crop_image, get_cifar10_labels
 
-EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
-
+# EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
+exp_name = 'baseline'
+EXP_PATH = f"{Path(__file__).parent.parent}/PAMI_EXPDIR/"+exp_name
 # Load config
 config = load_from_file(EXP_PATH, ['config'])[0]
 
@@ -25,7 +27,7 @@ model.load_model(config=config)
 
 # Visualization parameters
 # How to vis the representatives images: 1. 'rectangle' around the origin image. 2. 'patches' draw only the rf
-vis_option = 'rectangle'
+vis_option = 'patches'
 label_fontsize = 26
 dot_radius = 0.5
 n_representatives = 6
@@ -62,7 +64,7 @@ if os.path.isfile(clusters_stats_path) and os.access(clusters_stats_path, os.R_O
 else:
     raise ValueError("Need to run \'gatherClustersStats\' script first")
 
-rf = ReceptiveField( model.keras_model )
+rf = ReceptiveField(model.keras_model)
 
 for gmm_name in clusters_representatives:
     fc_flag = False

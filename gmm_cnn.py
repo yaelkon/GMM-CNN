@@ -114,7 +114,8 @@ class GMM_CNN( Encoder ):
                  freeze=True,
                  add_top=False,
                  layers_to_model=None,
-                 weights_dir=None):
+                 weights_dir=None
+                 ):
 
         # Fitting n_gaussians vector to be as the same length as the modeled layers
         if isinstance( layers_to_model, str ):
@@ -469,6 +470,23 @@ class GMM_CNN( Encoder ):
         output_layers = self.keras_model._output_layers
 
         return self._create_preds_dict( preds, output_layers )
+
+    def predict_by_layer(self, layers_name, x, batch_size=32):
+        output_layers_1 = []
+        output_layers_2 = []
+        if isinstance(layers_name, list):
+            for l in layers_name:
+                output_layers_1.append(self.keras_model.get_layer(name=l).get_output_at(0))
+                output_layers_2.append(self.keras_model.get_layer(name=l))
+        else:
+            output_layers_1.append(self.keras_model.get_layer(name=layers_name).get_output_at(0))
+            output_layers_2.append(self.keras_model.get_layer(name=layers_name))
+
+        intermediate_layer_model = Model(inputs=self.keras_model.get_input_at(0),
+                                         outputs=output_layers_1)
+        preds = intermediate_layer_model.predict(x, batch_size=batch_size)
+
+        return self._create_preds_dict(preds, output_layers_2)
 
     @staticmethod
     def evaluate(preds, labels):
