@@ -9,24 +9,19 @@ from gmm_cnn import GMM_CNN
 # from utils.data_preprocessing import add_watermark
 from keras.datasets import cifar10
 from keras.utils import to_categorical
-from utils.vis_utils import get_cifar10_labels, get_cifar10_watermarks_dict
+# from utils.vis_utils import get_cifar10_labels, get_cifar10_watermarks_dict
 from utils.data_preprocessing import add_watermark_by_class
-
-parser = argparse.ArgumentParser(description='Watermark experiment')
-
-parser.add_argument('--class1', dest='cls1',
-                    help='The name of the first class to add watermarks on top of its images',
-                    required=True, type=str)
-parser.add_argument('--class2', dest='cls2',
-                    help='The name of the second class to add watermarks on top of its images',
-                    required=True, type=str)
-
-args = parser.parse_args()
 
 
 # os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
-SAVING_DIR = f"{Path(__file__).parent.parent}/PAMI_EXPDIR/"+args.class1+'/'
-os.makedirs(SAVING_DIR)
+SAVING_DIR = f"{Path(__file__).parent.parent}/PAMI_EXPDIR/"
+# os.makedirs(SAVING_DIR)
+
+max_out = True
+
+if max_out:
+    SAVING_DIR+='max_out/'
+    # os.makedirs(SAVING_DIR)
 """ 
 An experiment pip for modeling CNN layers with GMM.
 Define your experiment parameters below
@@ -37,8 +32,10 @@ Define your experiment parameters below
 # SAVING_DIR = pjoin(*['C:', os.environ["HOME"], 'Desktop', 'tmp', 'resnet20_cifar10', time.strftime('%Y%m%d_%H%M%S')])
 
 # A pre-trained network's weights - optional
-WEIGHTS_DIR = pjoin(os.path.abspath(os.getcwd()), 'GMM-CNN','utils', 'cifar10_resnet20_weights.97.hdf5')
-freeze=False
+# WEIGHTS_DIR = pjoin(os.path.abspath(os.getcwd()),'utils','GMM-CNN', 'cifar10_resnet20_weights.97.hdf5')
+WEIGHTS_DIR = pjoin(os.path.abspath(os.getcwd()),'utils', 'cifar10_resnet20_weights.97.hdf5')
+freeze = True
+
 # --------- GMM parameters
 # Choose between 'generative' or 'discriminative' training loss
 GMM_training_method = 'discriminative'
@@ -55,8 +52,8 @@ layer_to_model = ['add_2', 'add_4', 'add_6', 'add_8', 'classification']
 n_gaussians = [500, 500, 500, 500, 10]
 
 # --------- Training parameters
-batch_size = 5
-num_epochs = 10
+batch_size = 2
+num_epochs = 20
 
 
 # -----------------------   Prepare cifar 10 dataset    --------------------------
@@ -89,7 +86,8 @@ model = GMM_CNN( n_gaussians=n_gaussians,
                  network_name=network_name,
                  set_classification_layer_as_output=True,
                  weights_dir=WEIGHTS_DIR,
-                 freeze=freeze)
+                 freeze=freeze,
+                 max_out=max_out)
 
 model.build_model()
 model.compile_model()
