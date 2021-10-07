@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from keras.datasets import cifar10
 from keras.utils import to_categorical
-
+from PIL import Image
 from gmm_cnn import GMM_CNN
 from receptivefield import ReceptiveField
 from utils.file import load_from_file
@@ -16,6 +16,7 @@ from utils.vis_utils import crop_image, get_cifar10_labels
 
 EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
 
+WATERMARK_EXP = False
 # Load config
 config = load_from_file(EXP_PATH, ['config'])[0]
 
@@ -36,6 +37,17 @@ makedir(vis_dir)
 
 # get data
 (_, _), (X_images, y_val) = cifar10.load_data()
+# Collect the data for WM experiment
+WM_DIR = pjoin(*[EXP_PATH, 'Watermark_Data', 'validation'])
+if WATERMARK_EXP and os.path.isdir(WM_DIR):
+    print("Loading Watermark data")
+    X_images = np.empty_like(X_images)
+    list_dir = sorted(os.listdir(WM_DIR))
+    for i, l in enumerate(list_dir):
+        img_dir = pjoin(WM_DIR, l)
+        image = Image.open(img_dir)
+        X_images[i] = np.array(image)
+
 y_one_hot = to_categorical(y_val, 10)
 class_labels = get_cifar10_labels()
 
