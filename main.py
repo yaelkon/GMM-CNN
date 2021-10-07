@@ -14,10 +14,10 @@ parser = argparse.ArgumentParser(description='Watermark experiment')
 
 parser.add_argument('--class1', dest='cls1',
                     help='The name of the first class to add watermarks on top of its images',
-                    required=True, type=str)
+                    required=False, type=str)
 parser.add_argument('--class2', dest='cls2',
                     help='The name of the second class to add watermarks on top of its images',
-                    required=True, type=str)
+                    required=False, type=str)
 
 args = parser.parse_args()
 
@@ -27,11 +27,20 @@ An experiment pip for modeling CNN layers with GMM.
 Define your experiment parameters below
 """
 
-SAVING_DIR = pjoin(*['C:', os.environ["HOME"], 'Desktop', 'tmp', 'resnet20_cifar10', time.strftime('%Y%m%d_%H%M%S')])
+SAVING_DIR = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'vgg16', time.strftime('%Y%m%d_%H%M%S')])
 
 # A pre-trained network's weights - optional
-WEIGHTS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils', 'cifar10_resnet20_weights.97.hdf5')
+UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils')
+WEIGHTS_DIR = pjoin(UTILS_DIR, 'cifar10vgg.h5')
 
+try:
+    FONT_DIR = pjoin(UTILS_DIR, 'Arialn.ttf')
+
+except:
+
+    FONT_DIR = None
+
+IS_WATERMARK_EXP = False
 # --------- GMM parameters
 # Choose between 'generative' or 'discriminative' training loss
 GMM_training_method = 'discriminative'
@@ -40,43 +49,49 @@ GMM_training_method = 'discriminative'
 input_shape = (32, 32, 3)
 
 # --------- Model parameters
-network_name = 'resnet20'
+network_name = 'vgg16'
 # Specify the layer name as str to model or a list contains str layer names for multiple modeled layers
-layer_to_model = ['add_2', 'add_4', 'add_6', 'add_8', 'classification']
+layer_to_model = ['conv2d_1', 'conv2d_3', 'conv2d_5', 'conv2d_8', 'conv2d_11', 'classification']
 # Specify the number of clusters each GMM will contain.
 # The clusters order has to be matched to the order specified in 'layer_to_model' arg.
-n_gaussians = [500, 500, 500, 500, 10]
+n_gaussians = [500, 500, 500, 500, 500, 10]
 
 # --------- Training parameters
 batch_size = 5
 num_epochs = 10
-
+add_top = False
 
 # -----------------------   Prepare cifar 10 dataset    --------------------------
 (x_train, y_train), (x_val, y_val) = cifar10.load_data()
 
 labels = get_cifar10_labels()
-base_watermarks_dict = get_cifar10_watermarks_dict()
-WM_dict = {args.cls1: base_watermarks_dict[args.cls1], args.cls2: base_watermarks_dict[args.cls2]}
 
-print('Preparing train watermark dataset')
-x_train = add_watermark_by_class(WM_dict,
-                                 x_train,
-                                 y_train,
-                                 labels,
-                                 train0validation1=0,
-                                 save_dataset=True,
-                                 saveing_dir=SAVING_DIR)
-print('Preparing validation watermark dataset')
-x_val = add_watermark_by_class(WM_dict,
-                               x_val,
-                               y_val,
-                               labels,
-                               train0validation1=1,
-                               save_dataset=True,
-                               saveing_dir=SAVING_DIR)
+if IS_WATERMARK_EXP:
+    base_watermarks_dict = get_cifar10_watermarks_dict()
+    WM_dict = {args.cls1: base_watermarks_dict[args.cls1], args.cls2: base_watermarks_dict[args.cls2]}
+
+    print('Preparing train watermark dataset')
+    x_train = add_watermark_by_class(WM_dict,
+                                     x_train,
+                                     y_train,
+                                     labels,
+                                     train0validation1=0,
+                                     save_dataset=True,
+                                     saveing_dir=SAVING_DIR,
+                                     fonttype=FONT_DIR if FONT_DIR is not None else 'Ubuntu-R.ttf')
+    print('Preparing validation watermark dataset')
+    x_val = add_watermark_by_class(WM_dict,
+                                   x_val,
+                                   y_val,
+                                   labels,
+                                   train0validation1=1,
+                                   save_dataset=True,
+                                   saveing_dir=SAVING_DIR,
+                                   fonttype=FONT_DIR if FONT_DIR is not None else 'Ubuntu-R.ttf')
 
 # Convert class vectors to binary class matrices.
+# x_train = x_train[:100]
+# y_train = y_train[:100]
 y_train = to_categorical(y_train, 10)
 y_val = to_categorical(y_val, 10)
 # Normalize the data
@@ -101,15 +116,17 @@ model = GMM_CNN( n_gaussians=n_gaussians,
                  layers_to_model=layer_to_model,
                  network_name=network_name,
                  set_classification_layer_as_output=True,
-                 weights_dir=WEIGHTS_DIR )
+                 weights_dir=WEIGHTS_DIR,
+                 freeze=True,
+                 add_top=add_top)
 
 model.build_model()
 model.compile_model()
 
 print('Initialising GMM parameters')
 
-layers_gmm_params = model.calc_modeled_layers_mean_and_std(x_train[:100])
-model.set_weights(layers_gmm_params)
+# layers_gmm_params = model.calc_modeled_layers_mean_and_std(x_train[:2])
+# model.set_weights(layers_gmm_params)
 
 # Fit the labels size according to the number of outputs layers
 n_outputs = len(model.output_layers)
