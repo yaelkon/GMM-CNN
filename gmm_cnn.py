@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 from keras.layers import (Input, Dense, GlobalAveragePooling2D, Flatten, Lambda, Activation)
 from keras.models import Model, load_model
-from keras.callbacks import ModelCheckpoint, CSVLogger, TensorBoard, TerminateOnNaN
+from keras.callbacks import ModelCheckpoint, CSVLogger, TensorBoard, TerminateOnNaN, ReduceLROnPlateau
 from keras.regularizers import l2
 from keras.applications.resnet50 import ResNet50
 from keras.applications.vgg16 import VGG16
@@ -16,6 +16,7 @@ from losses import build_gmm_loss
 from layers import GMM, gmm_bayes_activation, get_layer_output
 from utils.file import makedir, save_to_file
 from utils.resnet import build_resnet
+from utils.vgg16 import build_vgg16
 
 
 class Encoder( object ):
@@ -43,7 +44,9 @@ class Encoder( object ):
         elif name == 'resnet20':
             base_model = build_resnet( depth=20, input_layer=input_layer, n_classes=self.num_classes )
         elif name == 'vgg16':
-            base_model = VGG16( weights='imagenet', include_top=(not self.add_top), input_tensor=input_layer )
+            # base_model = VGG16( weights='imagenet', include_top=(not self.add_top), input_tensor=input_layer )
+            base_model = build_vgg16(input_shape=self.input_shape, n_classes=self.num_classes)
+            self.input_layer = base_model._input_layers[0].output
         else:
             raise TypeError( 'The model type cane be either resnet20, resnet50 or vgg16' )
 
@@ -110,10 +113,12 @@ class GMM_CNN( Encoder ):
                  set_gmm_activation_layer_as_output=False,
                  set_gmm_layer_as_output=False,
                  set_classification_layer_as_output=True,
+                 # max_out=False,
                  freeze=True,
                  add_top=False,
                  layers_to_model=None,
-                 weights_dir=None):
+                 weights_dir=None
+                 ):
 
         # Fitting n_gaussians vector to be as the same length as the modeled layers
         if isinstance( layers_to_model, str ):
@@ -122,12 +127,12 @@ class GMM_CNN( Encoder ):
             if isinstance( n_gaussians, int ):
                 n_gaussians = [n_gaussians]
             if len( n_gaussians ) != len( layers_to_model ):
-                raise ValueError( '\'n_gaussians\' size have to by the same size and order as \'gmm_layers\'' )
+                raise ValueError( '\'n_gaussians\' size have to be the same size and order as \'gmm_layers\'' )
         elif layers_to_model is not None:
             raise ValueError( 'GMM_layers have to receive a list (for multiple) or a string (for a single) value'
                               ' contains the layers name you want to model' )
 
-        if training_method != 'discriminative' and training_method != 'generative':
+        if training_method != 'discriminative' and training_method != 'generative' and layers_to_model is not None:
             raise ValueError( 'GMM training method must be either generative or discriminative' )
 
         super( GMM_CNN, self ).__init__( n_classes, freeze, weights_dir, weight_decay, add_top )
@@ -147,6 +152,7 @@ class GMM_CNN( Encoder ):
         self.seed = seed
         self.hyper_lambda = hyper_lambda
         self.freeze = freeze
+        # self.max_out = max_out
 
         self.input_layer = None
         self.output_layers = None
@@ -160,6 +166,7 @@ class GMM_CNN( Encoder ):
 
     def save_model_plot(self):
         plot_model( self.keras_model, to_file=os.path.join( self.model_path, 'model.png' ) )
+        pass
 
     def _build_callbacks(self):
         """Builds callbacks for training model.
@@ -167,8 +174,10 @@ class GMM_CNN( Encoder ):
 
         if self.training_method == 'discriminative':
             monitoring_name = 'val_' + self.classifiers_dict[self.gmm_dict[self.modeled_layers[0]]] + '_acc'
-        else:
+        elif self.training_method == 'generative':
             monitoring_name = 'val_' + self.gmm_layers[0] + '_loss'
+        else:
+            monitoring_name = 'val_acc'
 
         weights_checkpointer = ModelCheckpoint( filepath=os.path.join( self.model_path, self.weights_name_format ),
                                                 monitor=monitoring_name, save_best_only=True, save_weights_only=False )
@@ -181,7 +190,9 @@ class GMM_CNN( Encoder ):
 
         terminator = TerminateOnNaN()
 
-        return [weights_checkpointer, epoch_logger, tensorboard, terminator]
+        reduceOnPlateau = ReduceLROnPlateau()
+
+        return [weights_checkpointer, epoch_logger, tensorboard, terminator, reduceOnPlateau]
 
     def _build_classifier_layers(self, encoded):
         """Builds layers for classification on top of encoder layers.
@@ -233,8 +244,15 @@ class GMM_CNN( Encoder ):
                 self.gmm_layers.append( gmm_name )
 
             elif len( x.shape ) == 4:
+
+
                 gmm_name = 'gmm_' + layer_name
                 stop_grad_layer = Lambda( lambda x: K.stop_gradient( x ), name='stop_grad_layer_' + layer_name )( x )
+                # if self.max_out:
+                #     layer = MaxOut(n_clusters=self.n_gaussians[i],
+                #                 seed=self.seed,
+                #                 name=gmm_name)(stop_grad_layer)
+                # else:
                 layer = GMM( n_clusters=self.n_gaussians[i],
                              seed=self.seed,
                              name=gmm_name )( stop_grad_layer )
@@ -248,6 +266,7 @@ class GMM_CNN( Encoder ):
                 outputs_array.append( layer )
 
             if self.set_gmm_activation_layer_as_output or self.training_method == 'discriminative':
+                # if not self.max_out:
                 get_custom_objects().update( {'gmm_bayes_activation': Activation( gmm_bayes_activation )} )
                 x = Activation( gmm_bayes_activation, name='activation_' + gmm_name )( layer )
                 self.gmm_activations_dict.update( {gmm_name: 'activation_' + gmm_name} )
@@ -277,6 +296,7 @@ class GMM_CNN( Encoder ):
 
         outputs, encoded2 = self._build_gmm_layers( encoded[1:] )
         if self.training_method == 'discriminative':
+
             output2 = self._build_gmm_classifier_layers( encoded2 )
             outputs = outputs + output2
 
@@ -288,7 +308,7 @@ class GMM_CNN( Encoder ):
     def compile_model(self, options=None):
         makedir( self.model_path )
         self.keras_model.compile( optimizer=self.optimizer, loss=self.losses, metrics=self.metrics_dict,
-                                  options=options )
+                                  options=options)
 
     def build_model(self):
         """Builds and compiles the model.
@@ -456,6 +476,23 @@ class GMM_CNN( Encoder ):
         output_layers = self.keras_model._output_layers
 
         return self._create_preds_dict( preds, output_layers )
+
+    def predict_by_layer(self, layers_name, x, batch_size=32):
+        output_layers_1 = []
+        output_layers_2 = []
+        if isinstance(layers_name, list):
+            for l in layers_name:
+                output_layers_1.append(self.keras_model.get_layer(name=l).get_output_at(0))
+                output_layers_2.append(self.keras_model.get_layer(name=l))
+        else:
+            output_layers_1.append(self.keras_model.get_layer(name=layers_name).get_output_at(0))
+            output_layers_2.append(self.keras_model.get_layer(name=layers_name))
+
+        intermediate_layer_model = Model(inputs=self.keras_model.get_input_at(0),
+                                         outputs=output_layers_1)
+        preds = intermediate_layer_model.predict(x, batch_size=batch_size)
+
+        return self._create_preds_dict(preds, output_layers_2)
 
     @staticmethod
     def evaluate(preds, labels):
@@ -653,4 +690,3 @@ class GMM_CNN( Encoder ):
         save_to_file( file_dir=self.model_path,
                       objs_name=['config'],
                       objs=[config] )
-
