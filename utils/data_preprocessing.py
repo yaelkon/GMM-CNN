@@ -24,14 +24,15 @@ def pure_pil_alpha_to_color(image, color=(255, 255, 255)):
     return background
 
 
-def add_watermark(image, text='T', fontsize=8, color=(255, 0, 0, 100), offX=None, offY=None, verbose=0):
+def add_watermark(image, text='T', fontsize=8, color=(255, 0, 0, 100), offX=None, offY=None, verbose=0,
+                  fonttype='Ubuntu-R.ttf'):
     img_width, img_height, _ = image.shape
 
     pil_image = Image.fromarray(np.uint8(image))
     pil_image = pil_image.convert('RGBA')
     draw = ImageDraw.Draw(pil_image)
 
-    font = ImageFont.truetype("Ubuntu-R.ttf", fontsize)
+    font = ImageFont.truetype(fonttype, fontsize)
 
     # watermark font
     # watermark offset
@@ -61,7 +62,7 @@ def add_watermark(image, text='T', fontsize=8, color=(255, 0, 0, 100), offX=None
 
 
 def add_watermark_by_class(class_watermark_dict, X, Y, labels_str, train0validation1=0,
-                           save_dataset=False, saveing_dir='/tmp/'):
+                           save_dataset=False, saveing_dir='/tmp/', fonttype='Ubuntu-R.ttf'):
     """
     :param save_dataset:
     :param class_watermark_dict: {class_name: wm_symbol} -> {str: str}
@@ -79,7 +80,8 @@ def add_watermark_by_class(class_watermark_dict, X, Y, labels_str, train0validat
         class_name = labels_str[y]
         if class_name in class_watermark_dict:
             x = add_watermark(x,
-                              text=class_watermark_dict[class_name]
+                              text=class_watermark_dict[class_name],
+                              fonttype=fonttype
                               )
         X_watermark[i] = x
 
