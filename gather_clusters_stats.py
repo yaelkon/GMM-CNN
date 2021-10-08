@@ -74,14 +74,13 @@ if WATERMARK_EXP and os.path.isdir(WM_DIR):
         x_val[i] = np.array(image)
 # Convert class vectors to binary class matrices.
 y_one_hot = to_categorical(y_val, 10)
-
-# Normalize the data
 x_val = x_val.astype('float32')
-x_val /= 255
-
-# subtract pixel mean
-x_val_mean = np.mean(x_val, axis=0)
-x_val -= x_val_mean
+# Normalize the data
+if config['network_name'] != 'vgg16':
+    x_val /= 255
+    # subtract pixel mean
+    x_val_mean = np.mean(x_val, axis=0)
+    x_val -= x_val_mean
 
 n_data = y_one_hot.shape[0]
 interval = np.floor_divide(n_data, num_of_iterations)
