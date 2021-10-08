@@ -175,3 +175,16 @@ def gmm_bayes_activation(TLL):
     depended_prob = ETLL / rep_SETLL
 
     return depended_prob
+
+def max_channel_histogram(inputs):
+
+    argmax_channel = K.argmax(inputs, axis=-1)
+    zeros = K.zeros_like(inputs)
+    m, n, p = inputs.get_shape()[:3]
+    X = K.expand_dims(K.arange(m), axis=[1,2])
+    Y = K.expand_dims(K.arange(n), axis=[0,2])
+    Z = K.expand_dims(K.arange(p), axis=[0,1])
+    zeros[X, Y, Z, argmax_channel] = 1
+    channel_hist = K.sum(zeros, axis=(1, 2))
+
+    return channel_hist
