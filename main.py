@@ -98,7 +98,14 @@ y_val = to_categorical(y_val, 10)
 x_train = x_train.astype('float32')
 x_val = x_val.astype('float32')
 
-if network_name != 'vgg16':
+if network_name == 'vgg16':
+    # these values produced during first training and are general for the standard cifar10 training set normalization
+    mean = 120.707
+    std = 64.15
+    x_train = (x_train - mean) / (std + 1e-7)
+    x_val = (x_val - mean) / (std + 1e-7)
+
+else:
     x_train /= 255
     x_val /= 255
 
