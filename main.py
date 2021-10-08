@@ -97,13 +97,15 @@ y_val = to_categorical(y_val, 10)
 # Normalize the data
 x_train = x_train.astype('float32')
 x_val = x_val.astype('float32')
-x_train /= 255
-x_val /= 255
 
-# subtract pixel mean
-x_train_mean = np.mean(x_train, axis=0)
-x_train -= x_train_mean
-x_val -= x_train_mean
+if network_name != 'vgg16':
+    x_train /= 255
+    x_val /= 255
+
+    # subtract pixel mean
+    x_train_mean = np.mean(x_train, axis=0)
+    x_train -= x_train_mean
+    x_val -= x_train_mean
 
 
 # ------------------------   Begin Training  -------------------------------------
