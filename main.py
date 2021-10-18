@@ -27,7 +27,7 @@ An experiment pip for modeling CNN layers with GMM.
 Define your experiment parameters below
 """
 
-SAVING_DIR = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'vgg16', time.strftime('%Y%m%d_%H%M%S')])
+SAVING_DIR = pjoin(*['C:', os.environ["HOME"], 'Desktop', 'tmp', 'vgg16', time.strftime('%Y%m%d_%H%M%S')])
 
 # A pre-trained network's weights - optional
 UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils')
@@ -60,7 +60,7 @@ n_gaussians = [500, 500, 500, 500, 500, 10]
 batch_size = 5
 num_epochs = 10
 add_top = False
-
+max_channel_clustering = True
 # -----------------------   Prepare cifar 10 dataset    --------------------------
 (x_train, y_train), (x_val, y_val) = cifar10.load_data()
 
@@ -92,6 +92,9 @@ if IS_WATERMARK_EXP:
 # Convert class vectors to binary class matrices.
 # x_train = x_train[:100]
 # y_train = y_train[:100]
+# x_val = x_val[:100]
+# y_val = y_val[:100]
+
 y_train = to_categorical(y_train, 10)
 y_val = to_categorical(y_val, 10)
 # Normalize the data
@@ -127,7 +130,10 @@ model = GMM_CNN( n_gaussians=n_gaussians,
                  set_classification_layer_as_output=True,
                  weights_dir=WEIGHTS_DIR,
                  freeze=True,
-                 add_top=add_top)
+                 add_top=add_top,
+                 max_channel_clustering=max_channel_clustering,
+                 batch_size=batch_size
+                 )
 
 model.build_model()
 model.compile_model()

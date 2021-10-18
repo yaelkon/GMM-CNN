@@ -13,7 +13,7 @@ from keras.utils import plot_model, CustomObjectScope
 from keras.utils.generic_utils import get_custom_objects
 from keras import backend as K
 from losses import build_gmm_loss
-from layers import GMM, gmm_bayes_activation, get_layer_output
+from layers import GMM, gmm_bayes_activation, get_layer_output, max_channel_histogram
 from utils.file import makedir, save_to_file
 from utils.resnet import build_resnet
 from utils.vgg16 import build_vgg16
@@ -27,12 +27,14 @@ class Encoder( object ):
 
     """
 
-    def __init__(self, num_classes, freeze, weights_dir, weight_decay, add_top):
+    def __init__(self, num_classes, freeze, weights_dir, weight_decay, add_top, batch_size, input_shape):
         self.weight_decay = weight_decay
         self.num_classes = num_classes
         self.freeze = freeze
         self.weights_dir = weights_dir
         self.add_top = add_top
+        self.batch_size = batch_size
+        self.input_shape=input_shape
 
     def _build_encoder_layers(self, input_layer, name, gmm_layers=None):
         """Stacks sequence of conv/pool layers to make the encoder half.
@@ -45,7 +47,7 @@ class Encoder( object ):
             base_model = build_resnet( depth=20, input_layer=input_layer, n_classes=self.num_classes )
         elif name == 'vgg16':
             # base_model = VGG16( weights='imagenet', include_top=(not self.add_top), input_tensor=input_layer )
-            base_model = build_vgg16(input_shape=self.input_shape, n_classes=self.num_classes)
+            base_model = build_vgg16(input_shape=self.input_shape, batch_size=self.batch_size, n_classes=self.num_classes)
             self.input_layer = base_model._input_layers[0].output
         else:
             raise TypeError( 'The model type cane be either resnet20, resnet50 or vgg16' )
@@ -113,11 +115,12 @@ class GMM_CNN( Encoder ):
                  set_gmm_activation_layer_as_output=False,
                  set_gmm_layer_as_output=False,
                  set_classification_layer_as_output=True,
-                 # max_out=False,
+                 max_channel_clustering=False,
                  freeze=True,
                  add_top=False,
                  layers_to_model=None,
-                 weights_dir=None
+                 weights_dir=None,
+                 batch_size=32
                  ):
 
         # Fitting n_gaussians vector to be as the same length as the modeled layers
@@ -135,13 +138,13 @@ class GMM_CNN( Encoder ):
         if training_method != 'discriminative' and training_method != 'generative' and layers_to_model is not None:
             raise ValueError( 'GMM training method must be either generative or discriminative' )
 
-        super( GMM_CNN, self ).__init__( n_classes, freeze, weights_dir, weight_decay, add_top )
+        super( GMM_CNN, self ).__init__( n_classes, freeze, weights_dir, weight_decay, add_top, batch_size, input_shape )
 
         self.n_gaussians = n_gaussians
         self.model_path = saving_dir
         self.weights_name_format = weights_name_format
         self.optimizer = optimizer
-        self.input_shape = input_shape
+        # self.input_shape = input_shape
         self.n_classes = n_classes
         self.modeled_layers = layers_to_model
         self.training_method = training_method
@@ -152,7 +155,7 @@ class GMM_CNN( Encoder ):
         self.seed = seed
         self.hyper_lambda = hyper_lambda
         self.freeze = freeze
-        # self.max_out = max_out
+        self.max_out = max_channel_clustering
 
         self.input_layer = None
         self.output_layers = None
@@ -172,8 +175,10 @@ class GMM_CNN( Encoder ):
         """Builds callbacks for training model.
         """
 
-        if self.training_method == 'discriminative':
+        if self.training_method == 'discriminative' and not self.max_out:
             monitoring_name = 'val_' + self.classifiers_dict[self.gmm_dict[self.modeled_layers[0]]] + '_acc'
+        elif self.training_method == 'discriminative' and self.max_out:
+            monitoring_name = 'val_' + self.classifiers_dict['max_channel_hist_' + self.modeled_layers[0]] + '_acc'
         elif self.training_method == 'generative':
             monitoring_name = 'val_' + self.gmm_layers[0] + '_loss'
         else:
@@ -210,18 +215,43 @@ class GMM_CNN( Encoder ):
         outputs_array = []
         for i in range( len( encoded ) ):
             x = encoded[i]
-            layer_name = self.get_correspond_gmm_layer( self.modeled_layers[i] )
+
+            if not self.max_out:
+                layer_name = self.get_correspond_gmm_layer( self.modeled_layers[i] )
+            else:
+                layer_name = x.name.rsplit('/', 1)[0]
 
             if self.training_method == 'generative':
                 x = Lambda( lambda x: K.stop_gradient( x ), name='stop_grad_layer_classifier_%d' % (i + 1) )( x )
-
             if len( x.shape ) == 4:
                 x = GlobalAveragePooling2D( name='GAP_' + layer_name )( x )
+
             x = Dense( self.n_classes, activation='softmax', name='classifier_' + layer_name )( x )
             outputs_array.append( x )
             self.classifiers_dict.update( {layer_name: 'classifier_' + layer_name} )
 
         return outputs_array
+
+    def _build_max_channel_layers(self, encoded=None):
+        """Builds the max channel histogram.
+        """
+        outputs_array = []
+        layers_array = []
+        for i in range( len( encoded ) ):
+
+            layer_name = encoded[i].name.rsplit( '/', 1 )[0]
+            maxc_layer_name = 'max_channel_hist_' + layer_name
+            x = encoded[i]
+
+            get_custom_objects().update( {'max_channel_hist': Activation( max_channel_histogram )} )
+            x = Activation( max_channel_histogram, name=maxc_layer_name )( x )
+            self.gmm_activations_dict.update( {layer_name: maxc_layer_name} )
+            layers_array.append( x )
+
+            if self.set_gmm_activation_layer_as_output:
+                outputs_array.append( x )
+
+        return outputs_array, layers_array
 
     def _build_gmm_layers(self, encoded=None):
         """Builds the output layer that parametrizes a Gaussian Mixture Density.
@@ -244,15 +274,8 @@ class GMM_CNN( Encoder ):
                 self.gmm_layers.append( gmm_name )
 
             elif len( x.shape ) == 4:
-
-
                 gmm_name = 'gmm_' + layer_name
                 stop_grad_layer = Lambda( lambda x: K.stop_gradient( x ), name='stop_grad_layer_' + layer_name )( x )
-                # if self.max_out:
-                #     layer = MaxOut(n_clusters=self.n_gaussians[i],
-                #                 seed=self.seed,
-                #                 name=gmm_name)(stop_grad_layer)
-                # else:
                 layer = GMM( n_clusters=self.n_gaussians[i],
                              seed=self.seed,
                              name=gmm_name )( stop_grad_layer )
@@ -266,7 +289,6 @@ class GMM_CNN( Encoder ):
                 outputs_array.append( layer )
 
             if self.set_gmm_activation_layer_as_output or self.training_method == 'discriminative':
-                # if not self.max_out:
                 get_custom_objects().update( {'gmm_bayes_activation': Activation( gmm_bayes_activation )} )
                 x = Activation( gmm_bayes_activation, name='activation_' + gmm_name )( layer )
                 self.gmm_activations_dict.update( {gmm_name: 'activation_' + gmm_name} )
@@ -294,7 +316,11 @@ class GMM_CNN( Encoder ):
 
         self.network_output_layer_name = output1.name.rsplit( '/', 1 )[0]
 
-        outputs, encoded2 = self._build_gmm_layers( encoded[1:] )
+        if not self.max_out:
+            outputs, encoded2 = self._build_gmm_layers( encoded[1:] )
+        else:
+            outputs, encoded2 = self._build_max_channel_layers(encoded[1:])
+
         if self.training_method == 'discriminative':
 
             output2 = self._build_gmm_classifier_layers( encoded2 )

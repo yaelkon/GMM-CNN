@@ -1,5 +1,6 @@
 import math
-
+import tensorflow as tf
+import numpy as np
 from numpy.random import seed
 from tensorflow import set_random_seed
 from keras import backend as K
@@ -178,13 +179,19 @@ def gmm_bayes_activation(TLL):
 
 def max_channel_histogram(inputs):
 
-    argmax_channel = K.argmax(inputs, axis=-1)
-    zeros = K.zeros_like(inputs)
-    m, n, p = inputs.get_shape()[:3]
-    X = K.expand_dims(K.arange(m), axis=[1,2])
-    Y = K.expand_dims(K.arange(n), axis=[0,2])
-    Z = K.expand_dims(K.arange(p), axis=[0,1])
-    zeros[X, Y, Z, argmax_channel] = 1
-    channel_hist = K.sum(zeros, axis=(1, 2))
+    # argmax_channel = K.argmax(inputs, axis=-1)
+    # argmax_channel = K.cast(argmax_channel, dtype='int32')
+    # zeros = K.zeros_like(inputs)
+    # m, n = inputs.get_shape()[1:3]
+    # X = K.expand_dims(K.expand_dims(K.arange(batch_size), axis=-1), axis=-1)
+    # # X = K.expand_dims(K.arange(batch_size), axis=[1,2])
+    # Y = K.expand_dims(K.expand_dims(K.arange(m), axis=0), axis=-1)
+    # Z = K.expand_dims(K.expand_dims(K.arange(n), axis=0), axis=0)
+    # zeros[X, Y, Z, argmax_channel] = 1
+    # channel_hist = K.sum(zeros, axis=(1, 2))
 
-    return channel_hist
+    one_zero_tens = tf.where(tf.equal(tf.reduce_max(inputs, axis=-1, keep_dims=True), inputs), tf.constant(1, shape=inputs.shape),
+                    tf.constant(0, shape=inputs.shape))
+    one_zero_tens = K.cast(one_zero_tens, dtype='float32')
+
+    return one_zero_tens
