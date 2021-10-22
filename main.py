@@ -54,19 +54,34 @@ network_name = 'vgg16'
 layer_to_model = ['conv2d_1', 'conv2d_3', 'conv2d_5', 'conv2d_8', 'conv2d_11', 'classification']
 # Specify the number of clusters each GMM will contain.
 # The clusters order has to be matched to the order specified in 'layer_to_model' arg.
-n_gaussians = [500, 500, 500, 500, 500, 10]
+n_gaussians = [100, 100, 100, 100, 100, 10]
 
 # --------- Training parameters
-batch_size = 5
+batch_size = 8
 num_epochs = 10
 add_top = False
-max_channel_clustering = True
+max_channel_clustering = False
 # -----------------------   Prepare cifar 10 dataset    --------------------------
 (x_train, y_train), (x_val, y_val) = cifar10.load_data()
 
 labels = get_cifar10_labels()
 
 if IS_WATERMARK_EXP:
+    if not (hasattr(args, 'cls1') and hasattr(args, 'cls2')):
+        raise AttributeError (f'Watermark experiment set to {IS_WATERMARK_EXP}, but there are not classes names specified in argparse for cls1 and cls2')
+    SAVING_DIR = pjoin(SAVING_DIR, 'Watermark')
+    DATA_DIR = pjoin(SAVING_DIR, 'Watermark_Data')
+    train_data_dir = pjoin(DATA_DIR, 'train')
+    val_data_dir = pjoin(DATA_DIR, 'val')
+    # if (os.path.isfile(train_data_dir) and os.access(train_data_dir, os.R_OK))\
+    #         and (os.path.isfile(val_data_dir) and os.access(val_data_dir, os.R_OK)):
+    #     # checks if file exists
+    #     print("File exists and is readable")
+    #     print("Load Watermark Train Data...")
+    #     x_train = load_data_from_file(train_data_dir)
+    #     print("Load Watermark Validation Data...")
+    #     x_val = load_data_from_file(val_data_dir)
+    # else:
     base_watermarks_dict = get_cifar10_watermarks_dict()
     WM_dict = {args.cls1: base_watermarks_dict[args.cls1], args.cls2: base_watermarks_dict[args.cls2]}
 
@@ -77,7 +92,7 @@ if IS_WATERMARK_EXP:
                                      labels,
                                      train0validation1=0,
                                      save_dataset=True,
-                                     saveing_dir=SAVING_DIR,
+                                     saveing_dir=DATA_DIR,
                                      fonttype=FONT_DIR if FONT_DIR is not None else 'Ubuntu-R.ttf')
     print('Preparing validation watermark dataset')
     x_val = add_watermark_by_class(WM_dict,

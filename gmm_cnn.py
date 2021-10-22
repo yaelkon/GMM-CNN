@@ -129,7 +129,7 @@ class GMM_CNN( Encoder ):
         if isinstance( layers_to_model, list ):
             if isinstance( n_gaussians, int ):
                 n_gaussians = [n_gaussians]
-            if len( n_gaussians ) != len( layers_to_model ):
+            if len( n_gaussians ) != len( layers_to_model ) and not max_channel_clustering:
                 raise ValueError( '\'n_gaussians\' size have to be the same size and order as \'gmm_layers\'' )
         elif layers_to_model is not None:
             raise ValueError( 'GMM_layers have to receive a list (for multiple) or a string (for a single) value'

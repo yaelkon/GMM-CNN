@@ -1,5 +1,7 @@
 import os
 import json
+import matplotlib.image as mpimg
+import numpy as np
 
 
 def makedir(dir_path):
@@ -38,3 +40,16 @@ def load_from_file(file_dir, obj_name):
             data.append(json.load(json_file))
 
     return data
+
+
+def load_data_from_file(file_dir):
+    images = []
+    for filename in os.listdir(file_dir):
+        try:
+            img = mpimg.imread(os.path.join(file_dir, filename))
+            if img is not None:
+                images.append(img)
+        except:
+            print('Cant import ' + filename)
+    images = np.asarray(images)
+    return images

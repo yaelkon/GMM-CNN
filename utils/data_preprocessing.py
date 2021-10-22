@@ -2,6 +2,7 @@ from os.path import join as pjoin
 import matplotlib.pyplot as plt
 import random
 import numpy as np
+import os
 from PIL import Image, ImageFont, ImageDraw
 from utils.file import makedir
 
@@ -24,7 +25,7 @@ def pure_pil_alpha_to_color(image, color=(255, 255, 255)):
     return background
 
 
-def add_watermark(image, text='T', fontsize=8, color=(255, 0, 0, 100), offX=None, offY=None, verbose=0,
+def add_watermark(image, text='T', fontsize=8, color=(128,0,128, 100), offX=None, offY=None, verbose=0,
                   fonttype='Ubuntu-R.ttf'):
     img_width, img_height, _ = image.shape
 
@@ -74,25 +75,29 @@ def add_watermark_by_class(class_watermark_dict, X, Y, labels_str, train0validat
     X_watermark = np.empty_like(X)
     n_data = X.shape[0]
     n_digits = '0' + str(len(str(n_data)))
+    # wm_indices = {}
+    # for key in class_watermark_dict.keys():
+    #     kv = {key: []}
+    #     wm_indices.update(kv)
 
     for i, (x, y) in enumerate(zip(X, Y)):
         y = y[0]
-        class_name = labels_str[y]
-        if class_name in class_watermark_dict:
+        c = labels_str[y]
+        if c in class_watermark_dict:
             x = add_watermark(x,
-                              text=class_watermark_dict[class_name],
+                              text=class_watermark_dict[c],
                               fonttype=fonttype
                               )
+
+            if save_dataset:
+                class_saving_dir = pjoin(*[saveing_dir, 'val' if train0validation1 else 'train', c])
+                if not (os.path.isfile(class_saving_dir) and os.access(class_saving_dir, os.R_OK)):
+                    # Create dataset root
+                    makedir(class_saving_dir)
+                # Save image
+                pil_img = Image.fromarray(x)
+                full_dir = pjoin(class_saving_dir, f'{i:{n_digits}}' + '.png')
+                pil_img.save(full_dir)
+
         X_watermark[i] = x
-
-        if save_dataset:
-            if i == 0:
-                # Create dataset root
-                saveing_dir = pjoin(saveing_dir, 'Watermark_Data', 'validation' if train0validation1 else 'train')
-                makedir(saveing_dir)
-            # Save image
-            pil_img = Image.fromarray(x)
-            full_dir = pjoin(saveing_dir, f'{i:{n_digits}}' + '.png')
-            pil_img.save(full_dir)
-
     return X_watermark
