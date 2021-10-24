@@ -2,7 +2,7 @@ import os
 import numpy as np
 
 from sklearn.metrics import confusion_matrix
-from keras.layers import (Input, Dense, GlobalAveragePooling2D, Flatten, Lambda, Activation)
+from keras.layers import Input, Dense, GlobalAveragePooling2D, Flatten, Lambda, Activation
 from keras.models import Model, load_model
 from keras.callbacks import ModelCheckpoint, CSVLogger, TensorBoard, TerminateOnNaN, ReduceLROnPlateau
 from keras.regularizers import l2
@@ -168,7 +168,7 @@ class GMM_CNN( Encoder ):
         self.classifiers_dict = {}
 
     def save_model_plot(self):
-        plot_model( self.keras_model, to_file=os.path.join( self.model_path, 'model.png' ) )
+        # plot_model( self.keras_model, to_file=os.path.join( self.model_path, 'model.png' ) )
         pass
 
     def _build_callbacks(self):
@@ -432,7 +432,7 @@ class GMM_CNN( Encoder ):
         callbacks = self._build_callbacks()
 
         if x is not None:
-            history = self.keras_model.fit_generator( datagen.flow( x, y, batch_size=batch_size ),
+            history = self.keras_model.fit_generator( datagen.flow( x, y, batch_size=batch_size),
                                                       epochs=epochs, callbacks=callbacks,
                                                       validation_data=validation_data )
         else:

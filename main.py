@@ -27,8 +27,8 @@ An experiment pip for modeling CNN layers with GMM.
 Define your experiment parameters below
 """
 
-SAVING_DIR = pjoin(*['C:', os.environ["HOME"], 'Desktop', 'tmp', 'vgg16', time.strftime('%Y%m%d_%H%M%S')])
-
+SAVING_DIR = pjoin(*['C:', 'tmp', 'vgg16', time.strftime('%Y%m%d_%H%M%S')])
+# SAVING_DIR = ''
 # A pre-trained network's weights - optional
 UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils')
 WEIGHTS_DIR = pjoin(UTILS_DIR, 'cifar10vgg.h5')

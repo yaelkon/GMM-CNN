@@ -21,7 +21,7 @@ parser.add_argument('--class2', dest='cls2',
 
 args = parser.parse_args()
 
-os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
+# os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
 """ 
 An experiment pip for modeling CNN layers with GMM.
 Define your experiment parameters below
@@ -39,7 +39,7 @@ except:
 
     FONT_DIR = None
 
-IS_WATERMARK_EXP = True
+IS_WATERMARK_EXP = False
 # --------- GMM parameters
 # Choose between 'generative' or 'discriminative' training loss
 GMM_training_method = 'discriminative'
@@ -49,16 +49,19 @@ input_shape = (32, 32, 3)
 
 # --------- Model parameters
 network_name = 'vgg16'
-SAVING_DIR = pjoin(*['C:', os.environ["HOME"], 'Desktop', 'tmp', network_name])
+
+SAVING_DIR = 'G:\\My Drive\\Research\\My Papers\\TVCG paper\\experiments\\Watermarks\\vgg16'
+# SAVING_DIR = pjoin(*['C:', os.environ["HOME"], 'Desktop', 'tmp', network_name])
 # Specify the layer name as str to model or a list contains str layer names for multiple modeled layers
-layer_to_model = ['conv2d_1', 'conv2d_3', 'conv2d_5', 'conv2d_8', 'conv2d_11', 'classification']
+layer_to_model = ['conv2d_1', 'conv2d_3 ', 'conv2d_5', 'conv2d_8', 'conv2d_11', 'classification']
+layer_to_model = ['conv2d_8', 'conv2d_11', 'classification']
 # Specify the number of clusters each GMM will contain.
 # The clusters order has to be matched to the order specified in 'layer_to_model' arg.
-n_gaussians = [100, 100, 100, 100, 100, 10]
+n_gaussians = [20, 20, 20, 20, 20, 10]
 
 # --------- Training parameters
-batch_size = 16
-num_epochs = 10
+batch_size = 10
+num_epochs = 1
 add_top = False
 max_channel_clustering = False
 # -----------------------   Prepare cifar 10 dataset    --------------------------
@@ -133,7 +136,10 @@ else:
 
 
 # ------------------------   Begin Training  -------------------------------------
-for n_g, layer in zip(n_gaussians, layer_to_model):
+for i in range(len(layer_to_model)):
+    n_g = n_gaussians[i]
+    layer = layer_to_model[i]
+# for n_g, layer in zip(n_gaussians, layer_to_model):
     EXP_DIR = pjoin(*[SAVING_DIR, layer])
     model = GMM_CNN( n_gaussians=[n_g],
                      input_shape=input_shape,
@@ -174,4 +180,4 @@ for n_g, layer in zip(n_gaussians, layer_to_model):
                         batch_size=batch_size,
                         epochs=num_epochs,
                         validation_data=(x_val, val_labels))
-
+    del model
