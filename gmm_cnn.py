@@ -4,7 +4,8 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 from keras.layers import Input, Dense, GlobalAveragePooling2D, Flatten, Lambda, Activation
 from keras.models import Model, load_model
-from keras.callbacks import ModelCheckpoint, CSVLogger, TensorBoard, TerminateOnNaN, ReduceLROnPlateau
+from keras.callbacks import ModelCheckpoint, CSVLogger, TensorBoard, TerminateOnNaN, ReduceLROnPlateau, LearningRateScheduler
+from keras.optimizers import SGD
 from keras.regularizers import l2
 from keras.applications.resnet50 import ResNet50
 from keras.applications.vgg16 import VGG16
@@ -107,7 +108,10 @@ class GMM_CNN( Encoder ):
                  weight_decay=l2( 1e-4 ),
                  seed=101,
                  hyper_lambda=1,
-                 optimizer='Adam',
+                 # optimizer='Adam',
+                 optimizer='SGD',
+                 learning_rate=0.1,
+                 lr_decay=1e-6,
                  saving_dir='/tmp/',
                  weights_name_format='weights.{epoch:02d}.hdf5',
                  training_method='generative',
@@ -143,7 +147,8 @@ class GMM_CNN( Encoder ):
         self.n_gaussians = n_gaussians
         self.model_path = saving_dir
         self.weights_name_format = weights_name_format
-        self.optimizer = optimizer
+        self.learning_rate = learning_rate
+        self.optimizer = SGD(lr=self.learning_rate, decay=lr_decay, momentum=0.9, nesterov=True)
         # self.input_shape = input_shape
         self.n_classes = n_classes
         self.modeled_layers = layers_to_model
@@ -195,9 +200,15 @@ class GMM_CNN( Encoder ):
 
         terminator = TerminateOnNaN()
 
+        def lr_scheduler(epoch):
+            lr = self.learning_rate * (0.5 ** (epoch // 20))
+            print(f'Learning Rate: {lr}')
+            return lr
+        reduce_lr = LearningRateScheduler(lr_scheduler)
+
         reduceOnPlateau = ReduceLROnPlateau()
 
-        return [weights_checkpointer, epoch_logger, tensorboard, terminator, reduceOnPlateau]
+        return [weights_checkpointer, epoch_logger, tensorboard, terminator, reduce_lr]
 
     def _build_classifier_layers(self, encoded):
         """Builds layers for classification on top of encoder layers.
@@ -692,7 +703,8 @@ class GMM_CNN( Encoder ):
             'n_gaussians': self.n_gaussians,
             'model_path': self.model_path,
             'weights_name_format': self.weights_name_format,
-            'optimizer': self.optimizer,
+            'optimizer': 'SGD',
+            'learning_rate': self.learning_rate,
             'input_shape': self.input_shape,
             'n_classes': self.n_classes,
             'modeled_layers': self.modeled_layers,
