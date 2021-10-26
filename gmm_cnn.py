@@ -110,7 +110,7 @@ class GMM_CNN( Encoder ):
                  hyper_lambda=1,
                  # optimizer='Adam',
                  optimizer='SGD',
-                 learning_rate=0.1,
+                 learning_rate=0.01,
                  lr_decay=1e-6,
                  saving_dir='/tmp/',
                  weights_name_format='weights.{epoch:02d}.hdf5',
@@ -201,7 +201,7 @@ class GMM_CNN( Encoder ):
         terminator = TerminateOnNaN()
 
         def lr_scheduler(epoch):
-            lr = self.learning_rate * (0.5 ** (epoch // 20))
+            lr = self.learning_rate * (0.5 ** (epoch // 6))
             print(f'Learning Rate: {lr}')
             return lr
         reduce_lr = LearningRateScheduler(lr_scheduler)
