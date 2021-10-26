@@ -52,7 +52,6 @@ input_shape = (32, 32, 3)
 network_name = 'vgg16'
 
 SAVING_DIR = 'G:\\My Drive\\Research\\My Papers\\TVCG paper\\experiments\\tmp'
-SAVING_DIR = pjoin(*[SAVING_DIR, network_name])
 # Specify the layer name as str to model or a list contains str layer names for multiple modeled layers
 layer_to_model = None
 # layer_to_model = ['conv2d_8', 'conv2d_11', 'classification']
@@ -78,16 +77,7 @@ if IS_WATERMARK_EXP:
         raise AttributeError (f'Watermark experiment set to {IS_WATERMARK_EXP}, but there are not classes names specified in argparse for cls1 and cls2')
     SAVING_DIR = pjoin(SAVING_DIR, 'Watermark')
     DATA_DIR = pjoin(SAVING_DIR, 'Watermark_Data')
-    SAVING_DIR = pjoin(SAVING_DIR, args.cls1 + '_' + args.cls2)
-    # if (os.path.isfile(train_data_dir) and os.access(train_data_dir, os.R_OK))\
-    #         and (os.path.isfile(val_data_dir) and os.access(val_data_dir, os.R_OK)):
-    #     # checks if file exists
-    #     print("File exists and is readable")
-    #     print("Load Watermark Train Data...")
-    #     x_train = load_data_from_file(train_data_dir)
-    #     print("Load Watermark Validation Data...")
-    #     x_val = load_data_from_file(val_data_dir)
-    # else:
+    SAVING_DIR = pjoin(*[SAVING_DIR, network_name, args.cls1 + '_' + args.cls2])
     base_watermarks_dict = get_cifar10_watermarks_dict()
     WM_dict = {args.cls1: base_watermarks_dict[args.cls1], args.cls2: base_watermarks_dict[args.cls2]}
 
