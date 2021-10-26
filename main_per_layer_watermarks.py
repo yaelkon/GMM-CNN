@@ -51,7 +51,7 @@ input_shape = (32, 32, 3)
 # --------- Model parameters
 network_name = 'vgg16'
 
-SAVING_DIR = 'G:\\My Drive\\Research\\My Papers\\TVCG paper\\experiments\\tmp'
+SAVING_DIR = 'G:\\My Drive\\Research\\My Papers\\TVCG paper\\experiments'
 # Specify the layer name as str to model or a list contains str layer names for multiple modeled layers
 layer_to_model = None
 # layer_to_model = ['conv2d_8', 'conv2d_11', 'classification']
@@ -75,7 +75,7 @@ labels = get_cifar10_labels()
 if IS_WATERMARK_EXP:
     if not (hasattr(args, 'cls1') and hasattr(args, 'cls2')):
         raise AttributeError (f'Watermark experiment set to {IS_WATERMARK_EXP}, but there are not classes names specified in argparse for cls1 and cls2')
-    SAVING_DIR = pjoin(SAVING_DIR, 'Watermark')
+    SAVING_DIR = pjoin(SAVING_DIR, 'Watermarks')
     DATA_DIR = pjoin(SAVING_DIR, 'Watermark_Data')
     SAVING_DIR = pjoin(*[SAVING_DIR, network_name, args.cls1 + '_' + args.cls2])
     base_watermarks_dict = get_cifar10_watermarks_dict()
