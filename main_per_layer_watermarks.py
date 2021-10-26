@@ -51,8 +51,8 @@ input_shape = (32, 32, 3)
 # --------- Model parameters
 network_name = 'vgg16'
 
-SAVING_DIR = 'G:\\My Drive\\Research\\My Papers\\TVCG paper\\experiments\\Watermarks'
-# SAVING_DIR = pjoin(*['C:', os.environ["HOME"], 'Desktop', 'tmp', network_name])
+SAVING_DIR = 'G:\\My Drive\\Research\\My Papers\\TVCG paper\\experiments\\tmp'
+SAVING_DIR = pjoin(*[SAVING_DIR, network_name])
 # Specify the layer name as str to model or a list contains str layer names for multiple modeled layers
 layer_to_model = None
 # layer_to_model = ['conv2d_8', 'conv2d_11', 'classification']
@@ -78,8 +78,7 @@ if IS_WATERMARK_EXP:
         raise AttributeError (f'Watermark experiment set to {IS_WATERMARK_EXP}, but there are not classes names specified in argparse for cls1 and cls2')
     SAVING_DIR = pjoin(SAVING_DIR, 'Watermark')
     DATA_DIR = pjoin(SAVING_DIR, 'Watermark_Data')
-    train_data_dir = pjoin(DATA_DIR, 'train')
-    val_data_dir = pjoin(DATA_DIR, 'val')
+    SAVING_DIR = pjoin(SAVING_DIR, args.cls1 + '_' + args.cls2)
     # if (os.path.isfile(train_data_dir) and os.access(train_data_dir, os.R_OK))\
     #         and (os.path.isfile(val_data_dir) and os.access(val_data_dir, os.R_OK)):
     #     # checks if file exists
@@ -108,7 +107,7 @@ if IS_WATERMARK_EXP:
                                    labels,
                                    train0validation1=1,
                                    save_dataset=True,
-                                   saveing_dir=SAVING_DIR,
+                                   saveing_dir=DATA_DIR,
                                    fonttype=FONT_DIR if FONT_DIR is not None else 'Ubuntu-R.ttf')
 
 # Convert class vectors to binary class matrices.
