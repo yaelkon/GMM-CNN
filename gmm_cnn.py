@@ -173,7 +173,7 @@ class GMM_CNN( Encoder ):
         self.classifiers_dict = {}
 
     def save_model_plot(self):
-        # plot_model( self.keras_model, to_file=os.path.join( self.model_path, 'model.png' ) )
+        plot_model( self.keras_model, to_file=os.path.join( self.model_path, 'model.png' ) )
         pass
 
     def _build_callbacks(self):
