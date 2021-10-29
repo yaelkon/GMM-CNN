@@ -1,5 +1,6 @@
 from os.path import join as pjoin
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import random
 import numpy as np
 import os
@@ -101,3 +102,49 @@ def add_watermark_by_class(class_watermark_dict, X, Y, labels_str, train0validat
 
         X_watermark[i] = x
     return X_watermark
+
+def prepare_watermark_dataset(x, cls1, cls2, data_path):
+    cls1_dir = pjoin(data_path, cls1)
+    cls2_dir = pjoin(data_path, cls2)
+
+    cls1_data, cls1_inds = load_watermark_dataset(cls1_dir)
+    cls2_data, cls2_inds = load_watermark_dataset(cls2_dir)
+
+    x_watermark = np.empty_like(x)
+    n_data = x.shape[0]
+
+    for i in range(n_data):
+        counter = 0
+        if i in cls1_inds:
+            img_ind = cls1_inds.index(i)
+            x_watermark[i] = cls1_data[img_ind]
+            counter += 1
+
+        if i in cls2_inds:
+            img_ind = cls2_inds.index(i)
+            x_watermark[i] = cls2_data[img_ind]
+            counter += 1
+
+        if counter > 1:
+            raise IndexError (f'Image {i} was found in both {cls1} and {cls2} datasets')
+
+        elif counter == 0:
+            x_watermark[i] = x[i]
+
+    return x_watermark
+
+
+def load_watermark_dataset(data_path):
+    images = []
+    indices = []
+    for img_name in os.listdir(data_path):
+        try:
+            img = mpimg.imread(os.path.join(data_path, img_name))
+            img_index = int(img_name.split('.')[0])
+            if img is not None:
+                images.append(img)
+                indices.append(img_index)
+        except:
+            print('Cant import ' + img_name)
+    images = np.asarray(images)
+    return images, indices
