@@ -5,7 +5,7 @@ from sklearn.metrics import confusion_matrix
 from keras.layers import Input, Dense, GlobalAveragePooling2D, Flatten, Lambda, Activation
 from keras.models import Model, load_model
 from keras.callbacks import ModelCheckpoint, CSVLogger, TensorBoard, TerminateOnNaN, ReduceLROnPlateau, LearningRateScheduler
-from keras.optimizers import SGD
+from keras.optimizers import SGD, Adam
 from keras.regularizers import l2
 from keras.applications.resnet50 import ResNet50
 from keras.applications.vgg16 import VGG16
@@ -48,7 +48,7 @@ class Encoder( object ):
             base_model = build_resnet( depth=20, input_layer=input_layer, n_classes=self.num_classes )
         elif name == 'vgg16':
             # base_model = VGG16( weights='imagenet', include_top=(not self.add_top), input_tensor=input_layer )
-            base_model = build_vgg16(input_shape=self.input_shape, batch_size=self.batch_size, n_classes=self.num_classes)
+            base_model = build_vgg16(input_shape=self.input_shape, n_classes=self.num_classes)
             self.input_layer = base_model._input_layers[0].output
         else:
             raise TypeError( 'The model type cane be either resnet20, resnet50 or vgg16' )
@@ -148,7 +148,8 @@ class GMM_CNN( Encoder ):
         self.model_path = saving_dir
         self.weights_name_format = weights_name_format
         self.learning_rate = learning_rate
-        self.optimizer = SGD(lr=self.learning_rate, decay=lr_decay, momentum=0.9, nesterov=True)
+        self.optimizer = Adam(lr=self.learning_rate)
+            # SGD(lr=self.learning_rate, decay=lr_decay, momentum=0.9, nesterov=True)
         # self.input_shape = input_shape
         self.n_classes = n_classes
         self.modeled_layers = layers_to_model
@@ -201,7 +202,7 @@ class GMM_CNN( Encoder ):
         terminator = TerminateOnNaN()
 
         def lr_scheduler(epoch):
-            lr = self.learning_rate * (0.5 ** (epoch // 6))
+            lr = self.learning_rate * (0.5 ** (epoch // 20))
             print(f'Learning Rate: {lr}')
             return lr
         reduce_lr = LearningRateScheduler(lr_scheduler)
@@ -703,7 +704,7 @@ class GMM_CNN( Encoder ):
             'n_gaussians': self.n_gaussians,
             'model_path': self.model_path,
             'weights_name_format': self.weights_name_format,
-            'optimizer': 'SGD',
+            'optimizer': 'Adam',
             'learning_rate': self.learning_rate,
             'input_shape': self.input_shape,
             'n_classes': self.n_classes,

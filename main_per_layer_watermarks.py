@@ -34,7 +34,7 @@ Define your experiment parameters below
 UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils')
 #UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'GMM-CNN', 'utils')
 
-# WEIGHTS_DIR = pjoin(UTILS_DIR, 'cifar10vgg.h5')
+WEIGHTS_DIR = pjoin(UTILS_DIR, 'cifar10_resnet20_weights.97.hdf5')
 
 try:
     FONT_DIR = pjoin(UTILS_DIR, 'Arialn.ttf')
@@ -43,7 +43,7 @@ except:
 
     FONT_DIR = None
 
-IS_WATERMARK_EXP = True
+
 # --------- GMM parameters
 # Choose between 'generative' or 'discriminative' training loss
 GMM_training_method = 'discriminative'
@@ -52,36 +52,35 @@ GMM_training_method = 'discriminative'
 input_shape = (32, 32, 3)
 
 # --------- Model parameters
-network_name = 'vgg16'
+network_name = 'resnet20'
 
-SAVING_DIR = 'G:\\My Drive\\Research\\My Papers\\TVCG paper\\experiments'
+SAVING_DIR = os.path.join(*['C:\\', 'Yael', 'experiments', 'Watermarks', 'resnet20'])
 #SAVING_DIR = pjoin(os.path.abspath(os.getcwd()), 'Experiments')
 # Specify the layer name as str to model or a list contains str layer names for multiple modeled layers
 # layer_to_model = None
-layer_to_model = ['conv2d_1', 'conv2d_3', 'conv2d_5', 'conv2d_8', 'conv2d_11', 'classification']
+layer_to_model = ['add_2', 'add_4', 'add_6', 'add_8', 'classification']
 # Specify the number of clusters each GMM will contain.
 # The clusters order has to be matched to the order specified in 'layer_to_model' arg.
-n_gaussians = [20, 20, 40, 40, 40, 10]
+n_gaussians = [100, 100, 100, 100, 10]
 
 # --------- Training parameters
-batch_size = 8
-num_epochs = 1
+batch_size = 64
+num_epochs = 100
 add_top = False
 max_channel_clustering = False
+freeze = False
+IS_WATERMARK_EXP = True
 # -----------------------   Prepare cifar 10 dataset    --------------------------
 (x_train, y_train), (x_val, y_val) = cifar10.load_data()
-# x_train = x_train[:100]
-# y_train = y_train[:100]
-# x_val = x_val[:100]
-# y_val = y_val[:100]
 labels = get_cifar10_labels()
 
 if IS_WATERMARK_EXP:
     if not (hasattr(args, 'cls1') and hasattr(args, 'cls2')):
         raise AttributeError (f'Watermark experiment set to {IS_WATERMARK_EXP}, but there are not classes names specified in argparse for cls1 and cls2')
-    SAVING_DIR = pjoin(SAVING_DIR, 'Watermarks')
+    # SAVING_DIR = pjoin(SAVING_DIR, 'Watermarks')
+
+    SAVING_DIR = pjoin(*[SAVING_DIR, args.cls1 + '_' + args.cls2])
     DATA_DIR = pjoin(SAVING_DIR, 'Watermark_Data')
-    SAVING_DIR = pjoin(*[SAVING_DIR, network_name, args.cls1 + '_' + args.cls2])
     base_watermarks_dict = get_cifar10_watermarks_dict()
     WM_dict = {args.cls1: base_watermarks_dict[args.cls1], args.cls2: base_watermarks_dict[args.cls2]}
 
@@ -100,7 +99,7 @@ if IS_WATERMARK_EXP:
                                    y_val,
                                    labels,
                                    train0validation1=1,
-                                   save_dataset=False,
+                                   save_dataset=True,
                                    saveing_dir=DATA_DIR,
                                    fonttype=FONT_DIR if FONT_DIR is not None else 'Ubuntu-R.ttf')
 
@@ -144,53 +143,53 @@ else:
 #datagen.fit(x_train)
 
 # ------------------------   Begin Training  -------------------------------------
-for i in range(len(layer_to_model)):
-    n_g = n_gaussians[i]
-    layer = layer_to_model[i]
-    baseline_exp_dir = pjoin(*[SAVING_DIR, 'baseline'])
-    list_of_weights = glob.glob( pjoin( baseline_exp_dir, 'weights.*.hdf5' ) )
-    WEIGHTS_DIR = list_of_weights[-1]
-    EXP_DIR = pjoin(SAVING_DIR, layer)
-    model = GMM_CNN( n_gaussians=n_g,
-                     input_shape=input_shape,
-                     n_classes=10,
-                     training_method=GMM_training_method,
-                     saving_dir=EXP_DIR,
-                     layers_to_model=layer,
-                     network_name=network_name,
-                     set_classification_layer_as_output=True,
-                     weights_dir=WEIGHTS_DIR,
-                     freeze=True,
-                     add_top=add_top,
-                     max_channel_clustering=max_channel_clustering,
-                     batch_size=batch_size
-                     )
+# for i in range(len(layer_to_model)):
+#     n_g = n_gaussians[i]
+#     layer = layer_to_model[i]
+# baseline_exp_dir = pjoin(*[SAVING_DIR, 'baseline'])
+# list_of_weights = glob.glob( pjoin( baseline_exp_dir, 'weights.*.hdf5' ) )
+# WEIGHTS_DIR = list_of_weights[-1]
+# EXP_DIR = pjoin(SAVING_DIR, layer)
+model = GMM_CNN( n_gaussians=n_gaussians,
+                 input_shape=input_shape,
+                 n_classes=10,
+                 training_method=GMM_training_method,
+                 saving_dir=SAVING_DIR,
+                 layers_to_model=layer_to_model,
+                 network_name=network_name,
+                 set_classification_layer_as_output=True,
+                 weights_dir=WEIGHTS_DIR,
+                 freeze=freeze,
+                 add_top=add_top,
+                 max_channel_clustering=max_channel_clustering,
+                 batch_size=batch_size
+                 )
 
-    model.build_model()
-    model.compile_model()
+model.build_model()
+model.compile_model()
 
-    print('Initialising GMM parameters')
+print('Initialising GMM parameters')
 
-    # layers_gmm_params = model.calc_modeled_layers_mean_and_std(x_train[:2])
-    # model.set_weights(layers_gmm_params)
+# layers_gmm_params = model.calc_modeled_layers_mean_and_std(x_train[:2])
+# model.set_weights(layers_gmm_params)
 
-    # Fit the labels size according to the number of outputs layers
-    n_outputs = len(model.output_layers)
-    train_labels = []
-    val_labels = []
-    if n_outputs == 1:
-        train_labels = y_train
-        val_labels = y_val
-    else:
-        for i in range(n_outputs):
-            train_labels.append(y_train)
-            val_labels.append(y_val)
+# Fit the labels size according to the number of outputs layers
+n_outputs = len(model.output_layers)
+train_labels = []
+val_labels = []
+if n_outputs == 1:
+    train_labels = y_train
+    val_labels = y_val
+else:
+    for i in range(n_outputs):
+        train_labels.append(y_train)
+        val_labels.append(y_val)
 
-    print('Optimizing GMM params for layer: ', layer_to_model)
-    print('Number of gaussians in the experiment: ', n_gaussians)
-    print('Batch size: ', batch_size)
-    history = model.fit(x=x_train, y=train_labels,
-                                  batch_size=batch_size,
-                                  epochs=num_epochs,
-                                  validation_data=(x_val, val_labels))
+print('Optimizing GMM params for layer: ', layer_to_model)
+print('Number of gaussians in the experiment: ', n_gaussians)
+print('Batch size: ', batch_size)
+history = model.fit(x=x_train, y=train_labels,
+                              batch_size=batch_size,
+                              epochs=num_epochs,
+                              validation_data=(x_val, val_labels))
 
