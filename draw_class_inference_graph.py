@@ -7,12 +7,13 @@ from os.path import join as pjoin
 from gmm_cnn import GMM_CNN
 from utils.file import load_from_file, makedir
 from utils.gmm_utils import *
-from utils.vis_utils import get_cifar10_labels
+from utils.vis_utils import get_cifar10_labels, get_cifar10_watermarks_dict
 from layers import get_layer_output
 from inference_graph import Inference_Graph
 from utils.IG_utils import gather_coOccurrance_mat, get_IG_connections_dict_LR,\
      create_connections_heat_maps
 from receptivefield import ReceptiveField
+from utils.data_preprocessing import prepare_watermark_dataset, check_watermark_dataset_exist_and_readable, add_watermark_by_class
 
 
 EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
@@ -25,6 +26,10 @@ calc_heat_map_on_connections = False
 show_head_class = True
 to_color_edges = True
 add_quantities_on_edges = True
+
+IS_WATERMARK_EXP = True
+cls1 = 'horse'
+cls2 = 'ship'
 
 # Specify the layers to visualize and the visualization technique for each layer ('rectangle'/'patches')
 vis_option = {'add_2': 'rectangle',
@@ -55,13 +60,57 @@ vis_dir = pjoin(EXP_PATH, 'clusters_vis')
 # get data
 (_, _), (x_val, y_val) = cifar10.load_data()
 
+labels = get_cifar10_labels()
+# Collect the data for WM experiment
+UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils')
+#UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'GMM-CNN', 'utils')
+
+# WEIGHTS_DIR = pjoin(UTILS_DIR, 'cifar10vgg.h5')
+
+try:
+    FONT_DIR = pjoin(UTILS_DIR, 'Arialn.ttf')
+
+except:
+
+    FONT_DIR = None
+
+if IS_WATERMARK_EXP:
+    if cls1 is None or cls2 is None:
+        raise AttributeError (f'Watermark experiment set to {IS_WATERMARK_EXP}, but there are not classes names specified in argparse for cls1 and cls2')
+    DATA_DIR = pjoin(EXP_PATH, 'Watermark_Data')
+    VAL_DATA_DIR = pjoin(DATA_DIR, 'val')
+    dataset_exist = check_watermark_dataset_exist_and_readable(VAL_DATA_DIR, cls1=cls1, cls2=cls2)
+    # checks if file exists
+    if dataset_exist:
+        print("Watermark dataset exists and is readable")
+        print("Load Watermark val Data...")
+        x_val = prepare_watermark_dataset(x_val, cls1=cls1, cls2=cls2, data_path=VAL_DATA_DIR)
+    else:
+        print("Watermark dataset exists and is readable")
+        print('Preparing validation watermark dataset')
+        base_watermarks_dict = get_cifar10_watermarks_dict()
+        WM_dict = {cls1: base_watermarks_dict[cls1], cls2: base_watermarks_dict[cls2]}
+        x_val = add_watermark_by_class(WM_dict,
+                                       x_val,
+                                       y_val,
+                                       labels,
+                                       train0validation1=1,
+                                       save_dataset=True,
+                                       saveing_dir=DATA_DIR,
+                                       fonttype=FONT_DIR if FONT_DIR is not None else 'Ubuntu-R.ttf')
+
 # Normalize the data
 x_val = x_val.astype('float32')
-x_val /= 255
+if config['network_name'] != 'vgg16':
+    x_val /= 255
+    # subtract pixel mean
+    x_val_mean = np.mean(x_val, axis=0)
+    x_val -= x_val_mean
 
-# subtract pixel mean
-x_val_mean = np.mean(x_val, axis=0)
-x_val -= x_val_mean
+elif config['network_name'] == 'vgg16':
+    mean = 120.707
+    std = 64.15
+    x_val = (x_val - mean) / (std + 1e-7)
 
 classes_labels = get_cifar10_labels()
 

@@ -12,11 +12,16 @@ from gmm_cnn import GMM_CNN
 from receptivefield import ReceptiveField
 from utils.file import load_from_file
 from utils.file import makedir
-from utils.vis_utils import crop_image, get_cifar10_labels
+from utils.vis_utils import crop_image, get_cifar10_labels, get_cifar10_watermarks_dict
+from utils.data_preprocessing import prepare_watermark_dataset, check_watermark_dataset_exist_and_readable, add_watermark_by_class
 
-EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
+# EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
 
-WATERMARK_EXP = False
+IS_WATERMARK_EXP = True
+cls1 = 'horse'
+cls2 = 'ship'
+
+EXP_PATH = pjoin(*['C:\\', 'Yael', 'experiments', 'Watermarks', 'vgg16', cls1 + '_' + cls2])
 # Load config
 config = load_from_file(EXP_PATH, ['config'])[0]
 
@@ -37,16 +42,41 @@ makedir(vis_dir)
 
 # get data
 (_, _), (X_images, y_val) = cifar10.load_data()
+labels = get_cifar10_labels()
 # Collect the data for WM experiment
-WM_DIR = pjoin(*[EXP_PATH, 'Watermark_Data', 'validation'])
-if WATERMARK_EXP and os.path.isdir(WM_DIR):
-    print("Loading Watermark data")
-    X_images = np.empty_like(X_images)
-    list_dir = sorted(os.listdir(WM_DIR))
-    for i, l in enumerate(list_dir):
-        img_dir = pjoin(WM_DIR, l)
-        image = Image.open(img_dir)
-        X_images[i] = np.array(image)
+UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils')
+#UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'GMM-CNN', 'utils')
+
+try:
+    FONT_DIR = pjoin(UTILS_DIR, 'Arialn.ttf')
+
+except:
+
+    FONT_DIR = None
+if IS_WATERMARK_EXP:
+    if cls1 is None or cls2 is None:
+        raise AttributeError (f'Watermark experiment set to {IS_WATERMARK_EXP}, but there are not classes names specified in argparse for cls1 and cls2')
+    DATA_DIR = pjoin(EXP_PATH, 'Watermark_Data')
+    VAL_DATA_DIR = pjoin(DATA_DIR, 'val')
+    dataset_exist = check_watermark_dataset_exist_and_readable(VAL_DATA_DIR, cls1=cls1, cls2=cls2)
+    # checks if file exists
+    if dataset_exist:
+        print("Watermark dataset exists and is readable")
+        print("Load Watermark val Data...")
+        X_images = prepare_watermark_dataset(X_images, cls1=cls1, cls2=cls2, data_path=VAL_DATA_DIR)
+    else:
+        print("Watermark dataset exists and is readable")
+        print('Preparing validation watermark dataset')
+        base_watermarks_dict = get_cifar10_watermarks_dict()
+        WM_dict = {cls1: base_watermarks_dict[cls1], cls2: base_watermarks_dict[cls2]}
+        X_images = add_watermark_by_class(WM_dict,
+                                           X_images,
+                                           y_val,
+                                           labels,
+                                           train0validation1=1,
+                                           save_dataset=True,
+                                           saveing_dir=DATA_DIR,
+                                           fonttype=FONT_DIR if FONT_DIR is not None else 'Ubuntu-R.ttf')
 
 y_one_hot = to_categorical(y_val, 10)
 class_labels = get_cifar10_labels()

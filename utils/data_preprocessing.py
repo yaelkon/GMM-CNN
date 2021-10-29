@@ -148,3 +148,12 @@ def load_watermark_dataset(data_path):
             print('Cant import ' + img_name)
     images = np.asarray(images)
     return images, indices
+
+def check_watermark_dataset_exist_and_readable(data_path, cls1, cls2):
+    cls1_dir = pjoin(data_path, cls1)
+    cls2_dir = pjoin(data_path, cls2)
+
+    CLS1_IS_OK = (os.path.isdir(cls1_dir) and os.access(cls1_dir, os.R_OK))
+    CLS2_IS_OK = (os.path.isdir(cls2_dir) and os.access(cls2_dir, os.R_OK))
+
+    return CLS1_IS_OK and CLS2_IS_OK
