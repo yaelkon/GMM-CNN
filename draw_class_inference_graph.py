@@ -16,8 +16,8 @@ from receptivefield import ReceptiveField
 from utils.data_preprocessing import prepare_watermark_dataset, check_watermark_dataset_exist_and_readable, add_watermark_by_class
 
 
-EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
-head_classes = ['truck']
+# EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
+head_classes = ['dog', 'deer', 'car', 'bird']
 n_nodes_in_graph = 3
 edge_label_font_size = '22'
 header_font_size = '40'
@@ -28,14 +28,14 @@ to_color_edges = True
 add_quantities_on_edges = True
 
 IS_WATERMARK_EXP = True
-cls1 = 'horse'
-cls2 = 'ship'
-
+cls1 = 'deer'
+cls2 = 'dog'
+EXP_PATH = pjoin(*['/home', 'alonshp', 'Experiments', 'Watermarks', 'resnet20', cls1 + '_' + cls2])
 # Specify the layers to visualize and the visualization technique for each layer ('rectangle'/'patches')
-vis_option = {'add_2': 'rectangle',
-              'add_4': 'rectangle',
-              'add_6': 'rectangle',
-              'add_8': 'rectangle'
+vis_option = {'add_2': 'patches',
+              'add_4': 'patches',
+              'add_6': 'patches',
+              'add_8': 'patches'
               }
 
 # Get the saved weights
@@ -95,7 +95,7 @@ if IS_WATERMARK_EXP:
                                        y_val,
                                        labels,
                                        train0validation1=1,
-                                       save_dataset=True,
+                                       save_dataset=False,
                                        saveing_dir=DATA_DIR,
                                        fonttype=FONT_DIR if FONT_DIR is not None else 'Ubuntu-R.ttf')
 
@@ -155,7 +155,7 @@ if calc_global_flag:
                                                           RF=RF,
                                                           layers_to_inference=layers_to_inference,
                                                           data=x_val,
-                                                          num_of_iterations=5,
+                                                          num_of_iterations=2,
                                                           saving_flag=True,
                                                           return_flag=True)
 
