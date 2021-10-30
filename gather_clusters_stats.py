@@ -46,16 +46,16 @@ parser.add_argument('--cls2', dest='cls2',
 
 args = parser.parse_args()
 
-EXP_PATH = pjoin(*['C:\\', 'Yael', 'experiments', 'Watermarks', 'vgg16', args.cls1 + '_' + args.cls2])
-# EXP_PATH = pjoin(*[ORIGIN_DIR, 'merged_path'])
+# EXP_PATH = pjoin(*['/home', 'alonshp', 'Experiments', 'Watermarks', 'resnet20', args.cls1 + '_' + args.cls2])
+EXP_PATH = pjoin(*['/home', 'alonshp', 'Experiments', 'Watermarks', 'resnet20', args.cls1 + '_' + args.cls2])
 IS_WATERMARK_EXP = True
 
 # --------- Algorithm parameters
 # Specify the number of representatives for each cluster to save
 n_cluster_reps_to_save = 100
 # Equals for number of batches (not batch size!)
-num_of_iterations = 5
-batch_size = 5
+num_of_iterations = 2
+batch_size = 32
 
 # Load config
 config = load_from_file(EXP_PATH, ['config'])[0]
@@ -68,13 +68,14 @@ weights_dir = list_of_weights[-1]
 # Load model
 model = GMM_CNN()
 model.load_model(weights_dir=weights_dir, config=config)
+model.set_gmm_classification_weights()
 
 print(config['network_name'])
 # -----------------------   Prepare cifar 10 dataset    --------------------------
 (_, _), (x_val, y_val) = cifar10.load_data()
 labels = get_cifar10_labels()
 # Collect the data for WM experiment
-UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils')
+UTILS_DIR = pjoin(os.path.abspath(os.getcwd()))
 #UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'GMM-CNN', 'utils')
 
 try:
@@ -96,8 +97,8 @@ if IS_WATERMARK_EXP:
         print("Load Watermark val Data...")
         x_val = prepare_watermark_dataset(x_val, cls1=args.cls1, cls2=args.cls2, data_path=VAL_DATA_DIR)
     else:
-        print("Watermark dataset exists and is readable")
-        print('Preparing validation watermark dataset')
+        print("Watermark dataset Does Not exists")
+        print('Creating validation watermark dataset')
         base_watermarks_dict = get_cifar10_watermarks_dict()
         WM_dict = {args.cls1: base_watermarks_dict[args.cls1], args.cls2: base_watermarks_dict[args.cls2]}
         x_val = add_watermark_by_class(WM_dict,

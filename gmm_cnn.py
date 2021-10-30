@@ -108,8 +108,8 @@ class GMM_CNN( Encoder ):
                  weight_decay=l2( 1e-4 ),
                  seed=101,
                  hyper_lambda=1,
-                 # optimizer='Adam',
-                 optimizer='SGD',
+                 optimizer='Adam',
+                 # optimizer='SGD',
                  learning_rate=0.01,
                  lr_decay=1e-6,
                  saving_dir='/tmp/',
@@ -149,8 +149,10 @@ class GMM_CNN( Encoder ):
         self.weights_name_format = weights_name_format
         self.learning_rate = learning_rate
         self.optimizer = Adam(lr=self.learning_rate)
+            # Adam(lr=self.learning_rate)
             # SGD(lr=self.learning_rate, decay=lr_decay, momentum=0.9, nesterov=True)
         # self.input_shape = input_shape
+        # self.input_shape = input_sha
         self.n_classes = n_classes
         self.modeled_layers = layers_to_model
         self.training_method = training_method
@@ -192,7 +194,7 @@ class GMM_CNN( Encoder ):
 
         weights_checkpointer = ModelCheckpoint( filepath=os.path.join( self.model_path, self.weights_name_format ),
                                                 monitor=monitoring_name, save_best_only=True, save_weights_only=False )
-        self.save_model_plot()
+        # self.save_model_plot()
         self.save_config()
 
         epoch_logger = CSVLogger( os.path.join( self.model_path, 'epoch_log.csv' ) )
@@ -202,14 +204,14 @@ class GMM_CNN( Encoder ):
         terminator = TerminateOnNaN()
 
         def lr_scheduler(epoch):
-            lr = self.learning_rate * (0.5 ** (epoch // 20))
+            lr = self.learning_rate * (0.5 ** (epoch // 10))
             print(f'Learning Rate: {lr}')
             return lr
         reduce_lr = LearningRateScheduler(lr_scheduler)
 
-        reduceOnPlateau = ReduceLROnPlateau()
+        reduceOnPlateau = ReduceLROnPlateau(patience=10)
 
-        return [weights_checkpointer, epoch_logger, tensorboard, terminator, reduce_lr]
+        return [weights_checkpointer, epoch_logger, tensorboard, terminator, reduce_lr, reduceOnPlateau]
 
     def _build_classifier_layers(self, encoded):
         """Builds layers for classification on top of encoder layers.
@@ -688,7 +690,8 @@ class GMM_CNN( Encoder ):
         # Set gmm layer weights
         weights[0] = np.ones_like(weights[0]) * x  # mean
         weights[1] = np.ones_like(weights[1]) * std  # std
-        weights[2] = np.ones_like(weights[2]) * prior  # alpha
+        weights[2] = np.ones_like(weights[2]) * prior # alpha
+
         layer.set_weights(weights)
 
         gmm_classifier = self.classifiers_dict[gmm_layer]
