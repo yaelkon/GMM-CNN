@@ -18,10 +18,10 @@ from utils.data_preprocessing import prepare_watermark_dataset, check_watermark_
 # EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
 
 IS_WATERMARK_EXP = True
-cls1 = 'horse'
-cls2 = 'ship'
+cls1 = 'deer'
+cls2 = 'dog'
 
-EXP_PATH = pjoin(*['C:\\', 'Yael', 'experiments', 'Watermarks', 'vgg16', cls1 + '_' + cls2])
+EXP_PATH = pjoin(*['/home', 'alonshp', 'Experiments', 'Watermarks', 'resnet20', cls1 + '_' + cls2])
 # Load config
 config = load_from_file(EXP_PATH, ['config'])[0]
 
@@ -31,7 +31,7 @@ model.load_model(config=config)
 
 # Visualization parameters
 # How to vis the representatives images: 1. 'rectangle' around the origin image. 2. 'patches' draw only the rf
-vis_option = 'rectangle'
+vis_option = 'patches'
 label_fontsize = 26
 dot_radius = 0.5
 n_representatives = 6
