@@ -160,4 +160,4 @@ class Inference_Graph:
 
         file_name = self.graph.name + '_n=' + str(self.n_nodes) +\
                     '_' + time.strftime('%Y%m%d_%H%M%S') + '.gv'
-        self.graph.render(filename=file_name, directory=self.saving_dir, view=False, cleanup=True, format='png')
+        self.graph.render(filename=file_name, directory=self.saving_dir, view=False, cleanup=True)
