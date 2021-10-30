@@ -117,12 +117,16 @@ def prepare_watermark_dataset(x, cls1, cls2, data_path):
         counter = 0
         if i in cls1_inds:
             img_ind = cls1_inds.index(i)
-            x_watermark[i] = cls1_data[img_ind]
+            img = cls1_data[img_ind]
+            img = np.uint8(img*255) # Now scale by 255
+            x_watermark[i] =img
             counter += 1
 
         if i in cls2_inds:
             img_ind = cls2_inds.index(i)
-            x_watermark[i] = cls2_data[img_ind]
+            img = cls2_data[img_ind]
+            img = np.uint8(img*255) # Now scale by 255
+            x_watermark[i] =img
             counter += 1
 
         if counter > 1:
@@ -140,6 +144,7 @@ def load_watermark_dataset(data_path):
     for img_name in os.listdir(data_path):
         try:
             img = mpimg.imread(os.path.join(data_path, img_name))
+            plt.imshow(img)
             img_index = int(img_name.split('.')[0])
             if img is not None:
                 images.append(img)
