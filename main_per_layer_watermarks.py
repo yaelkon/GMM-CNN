@@ -28,13 +28,9 @@ args = parser.parse_args()
 An experiment pip for modeling CNN layers with GMM.
 Define your experiment parameters below
 """
-
-# , time.strftime('%Y%m%d_%H%M%S')
 # A pre-trained network's weights - optional
-UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils')
-#UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'GMM-CNN', 'utils')
-
-WEIGHTS_DIR = pjoin(UTILS_DIR, 'cifar10_resnet20_weights.97.hdf5')
+# UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'utils')
+UTILS_DIR = pjoin(os.path.abspath(os.getcwd()), 'GMM-CNN', 'utils')
 
 try:
     FONT_DIR = pjoin(UTILS_DIR, 'Arialn.ttf')
@@ -54,7 +50,9 @@ input_shape = (32, 32, 3)
 # --------- Model parameters
 network_name = 'resnet20'
 
-SAVING_DIR = os.path.join(*['C:\\', 'Yael', 'experiments', 'Watermarks', 'resnet20'])
+SAVING_DIR = os.path.join(*['/home', 'alonshp', 'Experiments', network_name])
+WEIGHTS_DIR = "/home/alonshp/GMM-CNN/utils/cifar10_resnet20_weights.97.hdf5"
+# pjoin(SAVING_DIR, 'baseline', args.cls1 + '_' + args.cls2, 'weights.67.hdf5')
 #SAVING_DIR = pjoin(os.path.abspath(os.getcwd()), 'Experiments')
 # Specify the layer name as str to model or a list contains str layer names for multiple modeled layers
 # layer_to_model = None
@@ -64,12 +62,13 @@ layer_to_model = ['add_2', 'add_4', 'add_6', 'add_8', 'classification']
 n_gaussians = [100, 100, 100, 100, 10]
 
 # --------- Training parameters
-batch_size = 64
-num_epochs = 100
+batch_size = 32
+num_epochs = 30
+lr = 0.01
 add_top = False
 max_channel_clustering = False
-freeze = False
-IS_WATERMARK_EXP = True
+freeze = True
+IS_WATERMARK_EXP = False
 # -----------------------   Prepare cifar 10 dataset    --------------------------
 (x_train, y_train), (x_val, y_val) = cifar10.load_data()
 labels = get_cifar10_labels()
@@ -99,10 +98,11 @@ if IS_WATERMARK_EXP:
                                    y_val,
                                    labels,
                                    train0validation1=1,
-                                   save_dataset=True,
+                                   save_dataset=False,
                                    saveing_dir=DATA_DIR,
                                    fonttype=FONT_DIR if FONT_DIR is not None else 'Ubuntu-R.ttf')
-
+else:
+    print('No Watermarks')
 # Convert class vectors to binary class matrices.
 
 y_train = to_categorical(y_train, 10)
@@ -150,9 +150,11 @@ else:
 # list_of_weights = glob.glob( pjoin( baseline_exp_dir, 'weights.*.hdf5' ) )
 # WEIGHTS_DIR = list_of_weights[-1]
 # EXP_DIR = pjoin(SAVING_DIR, layer)
+
 model = GMM_CNN( n_gaussians=n_gaussians,
                  input_shape=input_shape,
                  n_classes=10,
+                 learning_rate=lr,
                  training_method=GMM_training_method,
                  saving_dir=SAVING_DIR,
                  layers_to_model=layer_to_model,
@@ -170,8 +172,8 @@ model.compile_model()
 
 print('Initialising GMM parameters')
 
-# layers_gmm_params = model.calc_modeled_layers_mean_and_std(x_train[:2])
-# model.set_weights(layers_gmm_params)
+layers_gmm_params = model.calc_modeled_layers_mean_and_std(x_train[:2])
+model.set_weights(layers_gmm_params)
 
 # Fit the labels size according to the number of outputs layers
 n_outputs = len(model.output_layers)
