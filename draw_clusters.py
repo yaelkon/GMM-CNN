@@ -18,8 +18,8 @@ from utils.data_preprocessing import prepare_watermark_dataset, check_watermark_
 # EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
 
 IS_WATERMARK_EXP = True
-cls1 = 'deer'
-cls2 = 'dog'
+cls1 = 'frog'
+cls2 = 'car'
 
 EXP_PATH = pjoin(*['/home', 'alonshp', 'Experiments', 'Watermarks', 'resnet20', cls1 + '_' + cls2])
 # Load config
@@ -35,6 +35,7 @@ vis_option = 'patches'
 label_fontsize = 26
 dot_radius = 0.5
 n_representatives = 6
+with_label = False
 
 # make clusters saving directory
 vis_dir = pjoin(EXP_PATH, 'clusters_vis')
@@ -218,12 +219,13 @@ for gmm_name in clusters_representatives:
                     else:
                         raise ValueError('vision option can be either rectangle or patches')
 
-                if n_cols == 1:
-                    ax.set_title(img_label, fontdict={'fontsize': label_fontsize})
-                elif n_rows == 1:
-                    ax[col].set_title(img_label, fontdict={'fontsize': label_fontsize})
-                else:
-                    ax[row, col].set_title(img_label, fontdict={'fontsize': label_fontsize})
+                if with_label:
+                    if n_cols == 1:
+                        ax.set_title(img_label, fontdict={'fontsize': label_fontsize})
+                    elif n_rows == 1:
+                        ax[col].set_title(img_label, fontdict={'fontsize': label_fontsize})
+                    else:
+                        ax[row, col].set_title(img_label, fontdict={'fontsize': label_fontsize})
 
             if fc_flag:
                 fig_dir = os.path.join( layer_dir, 'cluster_' + c + '.png' )
