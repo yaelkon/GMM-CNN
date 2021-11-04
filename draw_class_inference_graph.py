@@ -17,7 +17,8 @@ from utils.data_preprocessing import prepare_watermark_dataset, check_watermark_
 
 
 # EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
-head_classes = ['dog', 'deer', 'car', 'bird']
+head_classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+# 'plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'
 n_nodes_in_graph = 3
 edge_label_font_size = '22'
 header_font_size = '40'
@@ -28,8 +29,8 @@ to_color_edges = True
 add_quantities_on_edges = True
 
 IS_WATERMARK_EXP = True
-cls1 = 'deer'
-cls2 = 'dog'
+cls1 = 'horse'
+cls2 = 'ship'
 EXP_PATH = pjoin(*['/home', 'alonshp', 'Experiments', 'Watermarks', 'resnet20', cls1 + '_' + cls2])
 # Specify the layers to visualize and the visualization technique for each layer ('rectangle'/'patches')
 vis_option = {'add_2': 'patches',
@@ -208,6 +209,6 @@ for head_class in head_classes:
                          heat_map_path=heat_map_dir,
                          show_head_class=show_head_class,
                          to_color_edges=to_color_edges,
-                         add_quantities_on_edges=add_quantities_on_edges,
+                         add_quantities_on_edges=add_quantities_on_edges
                          )
 

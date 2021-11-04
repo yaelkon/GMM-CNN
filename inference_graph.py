@@ -59,6 +59,7 @@ class Inference_Graph:
         connections_dict = self.connections_dict
 
         levels_dict = {}
+
         for node in connections_dict:
             img_path = None
             if node == 'class':
@@ -112,6 +113,8 @@ class Inference_Graph:
                     else:
                         edge_strength = connections_dict[key][value]
                         label = str(edge_strength)
+                    if not self.add_quantities:
+                        self.edge_label_font_size = '0'
 
                     if not self.add_quantities:
                         self.edge_label_font_size = '0'
