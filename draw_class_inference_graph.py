@@ -43,6 +43,7 @@ config['set_gmm_activation_layer_as_output'] = True
 # Load model
 model = GMM_CNN()
 model.load_model(weights_dir=weights_dir, config=config)
+model.set_gmm_classification_weights()
 
 layers_to_inference = []
 for key in vis_option:

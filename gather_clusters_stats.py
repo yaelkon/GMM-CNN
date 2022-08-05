@@ -57,6 +57,7 @@ weights_dir = list_of_weights[-1]
 # Load model
 model = GMM_CNN()
 model.load_model(weights_dir=weights_dir, config=config)
+model.set_gmm_classification_weights()
 
 # -----------------------   Prepare cifar 10 dataset    --------------------------
 (_, _), (x_val, y_val) = cifar10.load_data()
