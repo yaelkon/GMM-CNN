@@ -7,7 +7,6 @@ from keras.datasets import cifar10
 from keras.utils import to_categorical
 from utils.file import save_to_file, load_from_file
 from utils.gmm_utils import find_max, get_cluster_reps, create_cluster_stats
-from PIL import Image
 
 
 def merge_dicts(*dicts, option=1):
@@ -35,7 +34,6 @@ def merge_dicts(*dicts, option=1):
 
 
 EXP_PATH = pjoin(*['C:', os.environ["HOMEPATH"], 'Desktop', 'tmp', 'resnet20_cifar10'])
-WATERMARK_EXP = False
 
 # --------- Algorithm parameters
 # Specify the number of representatives for each cluster to save
@@ -61,16 +59,7 @@ model.set_gmm_classification_weights()
 
 # -----------------------   Prepare cifar 10 dataset    --------------------------
 (_, _), (x_val, y_val) = cifar10.load_data()
-# Collect the data for WM experiment
-WM_DIR = pjoin(*[EXP_PATH, 'Watermark_Data', 'validation'])
-if WATERMARK_EXP and os.path.isdir(WM_DIR):
-    print("Loading Watermark data")
-    x_val = np.empty_like(x_val)
-    list_dir = sorted(os.listdir(WM_DIR))
-    for i, l in enumerate(list_dir):
-        img_dir = pjoin(WM_DIR, l)
-        image = Image.open(img_dir)
-        x_val[i] = np.array(image)
+
 # Convert class vectors to binary class matrices.
 y_one_hot = to_categorical(y_val, 10)
 
@@ -96,11 +85,9 @@ for gmm_layer in model.gmm_dict.values():
 
         if i + 1 == num_of_iterations:
             preds = model.predict(x_val[i * interval:], batch_size=batch_size)
-            # res = model.evaluate(preds['classification'], y_one_hot[i * interval:])
             indices = np.arange(i*interval, x_val.shape[0])
         else:
             preds = model.predict(x_val[i * interval:(i + 1) * interval], batch_size=batch_size)
-            # res = model.evaluate(preds['classification'], y_one_hot[i * interval:(i + 1) * interval])
             indices = np.arange(i * interval, (i + 1) * interval)
 
         gmm_preds = preds['GMM'][gmm_layer]
