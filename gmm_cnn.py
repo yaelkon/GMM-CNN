@@ -218,7 +218,7 @@ class GMM_CNN( Encoder ):
         outputs_array = []
         layers_array = []
         for i in range( len( encoded ) ):
-            layer_name = encoded[i].name.rsplit( '/', 1 )[0]
+            layer_name = self.modeled_layers[i]
             x = encoded[i]
 
             if len( x.shape ) == 2:
