@@ -112,4 +112,4 @@ dependencies:
     - keras==2.2.5
     - python-graphviz==0.17
     - pyyaml==5.4.1
-prefix: /home/yael/anaconda3/envs/gmm-cnn
+prefix: /home/user/anaconda3/envs/gmm-cnn

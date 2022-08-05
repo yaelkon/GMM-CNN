@@ -22,6 +22,9 @@ edge_label_font_size = '22'
 header_font_size = '40'
 add_heat_map_on_connections = False
 calc_heat_map_on_connections = False
+show_head_class = True
+to_color_edges = True
+add_quantities_on_edges = True
 
 # Specify the layers to visualize and the visualization technique for each layer ('rectangle'/'patches')
 vis_option = {'add_2': 'rectangle',
@@ -40,6 +43,7 @@ config['set_gmm_activation_layer_as_output'] = True
 # Load model
 model = GMM_CNN()
 model.load_model(weights_dir=weights_dir, config=config)
+model.set_gmm_classification_weights()
 
 layers_to_inference = []
 for key in vis_option:
@@ -152,5 +156,9 @@ for head_class in head_classes:
                          heat_map_connections=add_heat_map_on_connections,
                          imgs_path=clusters_dir,
                          saving_dir=saving_dir,
-                         heat_map_path=heat_map_dir)
+                         heat_map_path=heat_map_dir,
+                         show_head_class=show_head_class,
+                         to_color_edges=to_color_edges,
+                         add_quantities_on_edges=add_quantities_on_edges,
+                         )
 

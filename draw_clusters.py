@@ -134,38 +134,47 @@ for gmm_name in clusters_representatives:
                     else:
                         ax[row, col].imshow(img)
 
-                elif vis_option == 'rectangle':
-                    # Create a center dot patch
-                    dot = patches.Circle( (origin_center[1], origin_center[0]), radius=dot_radius,
-                                          linewidth=1.25, edgecolor='r', facecolor='r' )
-                    # Create a Rectangle patch
-                    rect = patches.Rectangle((upper_left_col, upper_left_row), size[1]-1, size[0]-1,
-                                             linewidth=4, edgecolor='r', facecolor='none')
-                    # Add the patch to the Axes
-                    if n_cols == 1:
-                        ax.imshow(img)
-                        ax.add_patch(rect)
-                        ax.add_patch(dot)
-                    elif n_rows == 1:
-                        ax[col].imshow(img)
-                        ax[col].add_patch( rect )
-                        ax[col].add_patch( dot )
-                    else:
-                        ax[row, col].imshow(img)
-                        ax[row, col].add_patch( rect )
-                        ax[row, col].add_patch( dot )
-
-                elif vis_option == 'patches':
-                    crop_img = crop_image(image=img, row_pixel=upper_left_row, column_pixel=upper_left_col,
-                                          height=size[0], width=size[1])
-                    if n_cols == 1:
-                        ax.imshow(crop_img)
-                    elif n_rows == 1:
-                        ax[col].imshow(crop_img)
-                    else:
-                        ax[row, col].imshow(crop_img)
                 else:
-                    raise ValueError('vision option can be either rectangle or patches')
+                    if vis_option == 'rectangle':
+                        # Create a center dot patch
+                        dot = patches.Circle((origin_center[1], origin_center[0]), radius=dot_radius,
+                                             linewidth=1.25, edgecolor='r', facecolor='r')
+                        # Create a Rectangle patch
+                        rect = patches.Rectangle((upper_left_col, upper_left_row), size[1]-1, size[0]-1,
+                                                 linewidth=4, edgecolor='r', facecolor='none')
+                        # Add the patch to the Axes
+                        if n_cols == 1:
+                            ax.imshow(img)
+                            ax.add_patch(rect)
+                            ax.add_patch(dot)
+                        elif n_rows == 1:
+                            ax[col].imshow(img)
+                            ax[col].add_patch( rect )
+                            ax[col].add_patch( dot )
+                        else:
+                            ax[row, col].imshow(img)
+                            ax[row, col].add_patch( rect )
+                            ax[row, col].add_patch( dot )
+
+                    elif vis_option == 'patches':
+                        new_center_row = origin_center[0] - upper_left_row
+                        new_center_col = origin_center[1] - upper_left_col
+                        crop_img = crop_image(image=img, row_pixel=upper_left_row, column_pixel=upper_left_col,
+                                              height=size[0], width=size[1])
+                        # Create a center dot patch
+                        dot = patches.Circle((new_center_col, new_center_row), radius=dot_radius,
+                                             linewidth=1.25, edgecolor='r', facecolor='r')
+                        if n_cols == 1:
+                            ax.imshow(crop_img)
+                            ax.add_patch(dot)
+                        elif n_rows == 1:
+                            ax[col].imshow(crop_img)
+                            ax[col].add_patch(dot)
+                        else:
+                            ax[row, col].imshow(crop_img)
+                            ax[row, col].add_patch(dot)
+                    else:
+                        raise ValueError('vision option can be either rectangle or patches')
 
                 if n_cols == 1:
                     ax.set_title(img_label, fontdict={'fontsize': label_fontsize})

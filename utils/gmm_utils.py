@@ -51,7 +51,7 @@ def get_most_likely_clusters(gmm_preds):
         return clusters_layers_list
 
 
-def find_max(outputs_gmm_tens, outputs_llr_tens=None, n_max=10):
+def find_max(outputs_gmm_tens, outputs_llr_tens=None, n_max=10, indices=None):
     """Finds the most likely n_max examples of each cluster
     Args:
         outputs_gmm_tens (list) - a 4D tensor size (n_examples, height, weight, n_gaussians), containing the p(h|x) of
@@ -128,10 +128,13 @@ def find_max(outputs_gmm_tens, outputs_llr_tens=None, n_max=10):
                     threshold_ind = np.where(k_values == 1)[0][-1]
 
                 if len(tens_shape) == 4:
-                    image_inds = np.ceil((k_indices + 1) / (H_dim * W_dim)).astype('int32') - 1
-
+                    row_num = np.ceil((k_indices + 1) / (H_dim * W_dim)).astype('int32') - 1
+                    image_inds = indices[row_num]
                 elif len(tens_shape) == 2:
-                    image_inds = k_indices
+                    if indices is not None:
+                        image_inds = indices[k_indices]
+                    else:
+                        image_inds = k_indices
                 else:
                     raise ValueError( 'the output shape must be either 4 for convolutional layer or'
                                       ' 2 for dense layer, but got: {len(shape)}' )
@@ -144,11 +147,13 @@ def find_max(outputs_gmm_tens, outputs_llr_tens=None, n_max=10):
                     if threshold_ind > n_max:
                         temp_max = threshold_ind
 
+                    save_version_cluster_dict[k + 1]['image_inds'] = image_inds[:temp_max]
                     save_version_cluster_dict[k + 1]['k_indices'] = k_indices[:temp_max]
                     save_version_cluster_dict[k + 1]['values'] = k_values[:temp_max]
                     if order_by_llr:
                         save_version_cluster_dict[k + 1]['llr'] = llr_value[:temp_max]
                 else:
+                    save_version_cluster_dict[k + 1]['image_inds'] = image_inds
                     save_version_cluster_dict[k + 1]['k_indices'] = k_indices
                     save_version_cluster_dict[k + 1]['values'] = k_values
                     if order_by_llr:
@@ -167,6 +172,7 @@ def get_cluster_reps(clusters_dict, H_dim=None, W_dim=None, n_reps=10):
     dic = {}
     for cluster in clusters_dict:
         if clusters_dict[cluster] is not None:
+            image_inds = clusters_dict[cluster]['image_inds']
             k_indices = clusters_dict[cluster]['k_indices']
             k_values = clusters_dict[cluster]['values']
 
@@ -174,6 +180,7 @@ def get_cluster_reps(clusters_dict, H_dim=None, W_dim=None, n_reps=10):
                 k_llr = clusters_dict[cluster]['llr']
 
             argsort = np.argsort(k_values)
+            image_inds = np.flip(image_inds[argsort])
             k_indices = np.flip(k_indices[argsort])
             k_values = np.flip(k_values[argsort])
             try:
@@ -194,20 +201,22 @@ def get_cluster_reps(clusters_dict, H_dim=None, W_dim=None, n_reps=10):
                 one_value_indices = one_value_indices[argsort]
                 k_indices[:(threshold_ind + 1)] = one_value_indices
                 k_llr[:(threshold_ind + 1)] = llr_value[argsort]
+                image_inds[:(threshold_ind + 1)] = image_inds[argsort]
 
             new_n_rep = n_reps
             if len(k_indices) < n_reps:
                 new_n_rep = len(k_indices)
+            image_inds = image_inds[:new_n_rep]
             k_indices = k_indices[:new_n_rep]
             k_llr = k_llr[:new_n_rep]
             if H_dim is not None and W_dim is not None:
-                image_inds = np.ceil((k_indices + 1) / (H_dim * W_dim)).astype('int32') - 1
+                # image_inds = np.ceil((k_indices + 1) / (H_dim * W_dim)).astype('int32') - 1
                 location_inds = np.remainder(k_indices, H_dim * W_dim)
                 xPos = np.remainder(location_inds, W_dim)
                 yPos = np.floor_divide(location_inds, W_dim)
 
             else:
-                image_inds = k_indices
+            #     image_inds = k_indices
                 xPos = None
                 yPos = None
 
@@ -321,9 +330,3 @@ def spatial_pairwise_hist(rf, explained_layer_name, explaining_layer_name, expla
             tot_clusters_hist += clusters_hist
 
     return tot_clusters_hist
-
-
-
-
-
-

@@ -218,7 +218,7 @@ class GMM_CNN( Encoder ):
         outputs_array = []
         layers_array = []
         for i in range( len( encoded ) ):
-            layer_name = encoded[i].name.rsplit( '/', 1 )[0]
+            layer_name = self.modeled_layers[i]
             x = encoded[i]
 
             if len( x.shape ) == 2:
@@ -597,6 +597,32 @@ class GMM_CNN( Encoder ):
                 layer_gmm_params[gmm_layer_name].update( {'std': std} )
 
         return layer_gmm_params
+
+    def set_gmm_classification_weights(self, mean=1, std=0.1):
+        # out_layer = self.keras_model.get_layer(self.network_output_layer_name)
+        gmm_layer = self.get_correspond_gmm_layer(self.network_output_layer_name)
+        layer = self.keras_model.get_layer(gmm_layer)
+        weights = layer.get_weights()
+
+        # mean
+        K = layer.n_clusters
+        x = np.zeros((K, K))
+        np.fill_diagonal(x, mean)
+        # prior
+        prior = 1/self.n_classes
+        # Set gmm layer weights
+        weights[0] = np.ones_like(weights[0]) * x  # mean
+        weights[1] = np.ones_like(weights[1]) * std  # std
+        weights[2] = np.ones_like(weights[2]) * prior  # alpha
+        layer.set_weights(weights)
+
+        gmm_classifier = self.classifiers_dict[gmm_layer]
+        layer = self.keras_model.get_layer(gmm_classifier)
+        weights = layer.get_weights()
+        # set classifier weights
+        weights[0] = np.ones_like(weights[0]) * x  # mean
+        weights[1] = np.ones_like(weights[1]) * 0
+        layer.set_weights(weights)
 
     def save_config(self):
         config = {
