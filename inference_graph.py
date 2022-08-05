@@ -1,6 +1,5 @@
 from graphviz import Digraph
 import os
-import numpy as np
 import time
 
 
@@ -20,11 +19,16 @@ class Inference_Graph:
                  saving_format='png',
                  saving_dir='/tmp/',
                  heat_map_path=None,
-                 image_inference=False):
+                 image_inference=False,
+                 show_head_class=True,
+                 to_color_edges=True,
+                 add_quantities_on_edges=True,
+                 ):
 
         os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
         self.head_class_name = head_class_name
         self.head_class_index = head_class_index
+        self.show_head_class = show_head_class
         self.connections_dict = connections_dict
         self.imgs_path = imgs_path
         self.node_type = node_type
@@ -36,6 +40,8 @@ class Inference_Graph:
         self.n_nodes = n_nodes
         self.image_inf = image_inference
         self.edge_label_font_size = edge_label_font_size
+        self.to_color_edges = to_color_edges
+        self.add_quantities = add_quantities_on_edges
 
         self.graph = Digraph(name=name, format=saving_format)
         self.graph.graph_attr.update({'label': 'Class ' + head_class_name})
@@ -54,13 +60,15 @@ class Inference_Graph:
 
         levels_dict = {}
         for node in connections_dict:
+            img_path = None
             if node == 'class':
-                if self.image_inf:
-                    cluster_name = 'classification_cluster_' + str(self.head_class_index + 1) + '.png'
-                    img_path = os.path.join(*[self.imgs_path, cluster_name])
-                else:
-                    cluster_name = 'cluster_' + str(self.head_class_index + 1) + '.png'
-                    img_path = os.path.join(*[self.imgs_path, 'classification', cluster_name])
+                if self.show_head_class:
+                    if self.image_inf:
+                        cluster_name = 'classification_cluster_' + str(self.head_class_index + 1) + '.png'
+                        img_path = os.path.join(*[self.imgs_path, cluster_name])
+                    else:
+                        cluster_name = 'cluster_' + str(self.head_class_index + 1) + '.png'
+                        img_path = os.path.join(*[self.imgs_path, 'classification', cluster_name])
             else:
                 layer_name = node.split('_')[0]
                 for i in range(len(node.split('_')) - 2):
@@ -86,8 +94,9 @@ class Inference_Graph:
                 else:
                     levels_dict[layer_name] = [node]
 
-            self.graph.node(node, label="", shape='box', color='white', fontsize='0', image=img_path,
-                            imagescale='height', margin='0.0')
+            if img_path is not None:
+                self.graph.node(node, label="", shape='box', color='white', fontsize='0', image=img_path,
+                                imagescale='height', margin='0.0')
         # set the layers to be at the same level in the graph
         for key in levels_dict:
             with self.graph.subgraph() as s:
@@ -104,18 +113,23 @@ class Inference_Graph:
                         edge_strength = connections_dict[key][value]
                         label = str(edge_strength)
 
+                    if not self.add_quantities:
+                        self.edge_label_font_size = '0'
+
                     #     Weak connection
                     if edge_strength <= 0:
                         color = 'white'
                         penwidth = '0.0'
-                    #     Medium connection
-                    elif edge_strength <= 1:
-                        color = 'black'
-                        penwidth = '2.0'
+
                     #     Strong connection
-                    else:
+                    elif edge_strength > 1 and self.to_color_edges:
                         color = 'green'
                         penwidth = '3.0'
+
+                    #     Medium connection
+                    else:
+                        color = 'black'
+                        penwidth = '2.0'
 
                     if key == 'class':
                         if penwidth == '0.0':
